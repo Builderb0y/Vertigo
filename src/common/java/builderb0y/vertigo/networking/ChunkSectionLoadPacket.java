@@ -17,9 +17,7 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtSizeTracker;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.s2c.play.ChunkData;
 import net.minecraft.network.packet.s2c.play.ChunkData.BlockEntityData;
 import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
@@ -39,9 +37,12 @@ import builderb0y.vertigo.Vertigo;
 import builderb0y.vertigo.api.VertigoClientEvents;
 
 #if MC_VERSION >= MC_1_20_5
+	import net.minecraft.nbt.NbtSizeTracker;
 	import net.minecraft.network.RegistryByteBuf;
 	import net.minecraft.network.codec.PacketCodec;
 	import net.minecraft.network.codec.PacketCodecs;
+	import net.minecraft.network.packet.CustomPayload;
+	import net.minecraft.network.packet.CustomPayload.Id;
 #else
 	import net.fabricmc.fabric.api.networking.v1.PacketType;
 #endif
@@ -73,7 +74,7 @@ implements VertigoPacket {
 				ChunkSectionLoadPacket::new
 			)
 		);
-		public static final CustomPayload.Id<ChunkSectionLoadPacket> ID = new CustomPayload.Id<>(Vertigo.modID("section_load"));
+		public static final Id<ChunkSectionLoadPacket> ID = new Id<>(Vertigo.modID("section_load"));
 
 		@Override
 		public Id<? extends CustomPayload> getId() {
@@ -110,7 +111,8 @@ implements VertigoPacket {
 			buffer
 			.writeInt(this.sectionX)
 			.writeInt(this.sectionY)
-			.writeInt(this.sectionZ)
+			.writeInt(this.sectionZ);
+			buffer
 			.writeByteArray(this.sectionData)
 			.writeBoolean(this.skylightData.isPresent());
 			if (this.skylightData.isPresent()) buffer.writeBytes(this.skylightData.get());
@@ -224,7 +226,8 @@ implements VertigoPacket {
 			}
 
 			public void write(PacketByteBuf buffer) {
-				buffer.writeByte(this.packedXZ).writeInt(this.y).writeRegistryValue(Registries.BLOCK_ENTITY_TYPE, this.type);
+				buffer.writeByte(this.packedXZ).writeInt(this.y);
+				buffer.writeRegistryValue(Registries.BLOCK_ENTITY_TYPE, this.type);
 				buffer.writeNbt(this.nbt);
 			}
 

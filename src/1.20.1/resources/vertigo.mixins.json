@@ -5,9 +5,9 @@
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
 		"ChunkData_FilterSections",
-		"ChunkDataSender_TrackPlayer",
 		"ChunkHolder_FilterSections",
 		"PlayerLookup_AutomaticCompatibility",
+		"ThreadedAnvilChunkStorage_TrackPlayer",
 		"WorldChunk_SyncSkylight"
 	],
 	"client": [

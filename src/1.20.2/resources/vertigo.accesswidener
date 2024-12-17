@@ -10,6 +10,5 @@ accessible field net/minecraft/world/chunk/WorldChunk EMPTY_BLOCK_ENTITY_TICKER 
 
 accessible field net/minecraft/client/world/ClientChunkManager chunks Lnet/minecraft/client/world/ClientChunkManager$ClientChunkMap;
 accessible class net/minecraft/client/world/ClientChunkManager$ClientChunkMap
-accessible method net/minecraft/client/world/ClientChunkManager$ClientChunkMap refreshSections (Lnet/minecraft/world/chunk/WorldChunk;)V
 
 accessible field net/minecraft/world/chunk/light/ChunkSkyLight palette Lnet/minecraft/util/collection/PaletteStorage;

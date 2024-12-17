@@ -10,8 +10,6 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.network.packet.CustomPayload.Id;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -22,12 +20,15 @@ import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.WorldChunk.WrappedBlockEntityTickInvoker;
 
+import builderb0y.vertigo.VersionUtil;
 import builderb0y.vertigo.Vertigo;
 import builderb0y.vertigo.api.VertigoClientEvents;
 
 #if MC_VERSION >= MC_1_20_5
 	import net.minecraft.network.codec.PacketCodec;
 	import net.minecraft.network.codec.PacketCodecs;
+	import net.minecraft.network.packet.CustomPayload;
+	import net.minecraft.network.packet.CustomPayload.Id;
 #else
 	import net.fabricmc.fabric.api.networking.v1.PacketType;
 #endif
@@ -50,7 +51,7 @@ implements VertigoPacket {
 			)
 		);
 
-		public static final CustomPayload.Id<ChunkSectionUnloadPacket> ID = new CustomPayload.Id<>(Vertigo.modID("section_unload"));
+		public static final Id<ChunkSectionUnloadPacket> ID = new Id<>(Vertigo.modID("section_unload"));
 
 		@Override
 		public Id<? extends CustomPayload> getId() {
@@ -93,13 +94,7 @@ implements VertigoPacket {
 		WorldChunk chunk = (WorldChunk)(world.getChunk(this.sectionX, this.sectionZ, ChunkStatus.FULL, false));
 		if (chunk == null) return;
 		VertigoClientEvents.SECTION_UNLOADED.invoker().onSectionUnloaded(this.sectionX, this.sectionY, this.sectionZ);
-		Registry<Biome> biomeRegistry;
-		#if MC_VERSION >= MC_1_21_3
-			biomeRegistry = world.getRegistryManager().getOrThrow(RegistryKeys.BIOME);
-		#else
-			biomeRegistry = world.getRegistryManager().get(RegistryKeys.BIOME);
-		#endif
-		chunk.getSectionArray()[chunk.sectionCoordToIndex(this.sectionY)] = new ChunkSection(biomeRegistry);
+		chunk.getSectionArray()[chunk.sectionCoordToIndex(this.sectionY)] = VersionUtil.newEmptyChunkSection(world.getRegistryManager());
 		chunk.getBlockEntities().values().removeIf((BlockEntity blockEntity) -> {
 			if (blockEntity.getPos().getY() >> 4 == this.sectionY) {
 				blockEntity.markRemoved();

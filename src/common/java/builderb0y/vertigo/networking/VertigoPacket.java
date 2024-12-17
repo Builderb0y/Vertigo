@@ -6,11 +6,10 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.network.packet.CustomPayload;
 
 public interface VertigoPacket
 #if MC_VERSION >= MC_1_20_5
-	extends CustomPayload
+	extends net.minecraft.network.packet.CustomPayload
 #else
 	extends net.fabricmc.fabric.api.networking.v1.FabricPacket
 #endif

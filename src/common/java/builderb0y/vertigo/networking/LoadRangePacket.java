@@ -7,7 +7,6 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.ChunkPos;
 
@@ -20,6 +19,8 @@ import builderb0y.vertigo.api.VertigoClientEvents;
 #if MC_VERSION >= MC_1_20_5
 	import net.minecraft.network.codec.PacketCodec;
 	import net.minecraft.network.codec.PacketCodecs;
+	import net.minecraft.network.packet.CustomPayload;
+	import net.minecraft.network.packet.CustomPayload.Id;
 #else
 	import net.fabricmc.fabric.api.networking.v1.PacketType;
 #endif
@@ -44,7 +45,7 @@ implements VertigoPacket {
 			)
 		);
 
-		public static final CustomPayload.Id<LoadRangePacket> ID = new CustomPayload.Id<>(Vertigo.modID("load_range"));
+		public static final Id<LoadRangePacket> ID = new Id<>(Vertigo.modID("load_range"));
 
 		@Override
 		public Id<? extends CustomPayload> getId() {

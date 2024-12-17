@@ -38,7 +38,7 @@ public class VerticalTrackingManager {
 
 	public VerticalTrackingManager(ServerPlayerEntity player) {
 		this.previousSectionY = player.getBlockY() >> 4;
-		this.previousViewDistance = player.getViewDistance();
+		this.previousViewDistance = VersionUtil.getViewDistance(player);
 	}
 
 	public VerticalTrackingManager() {}
@@ -62,10 +62,10 @@ public class VerticalTrackingManager {
 					iterator.remove();
 				}
 				else {
-					if (manager.previousSectionY != player.getBlockY() >> 4 || manager.previousViewDistance != player.getViewDistance()) {
+					if (manager.previousSectionY != player.getBlockY() >> 4 || manager.previousViewDistance != VersionUtil.getViewDistance(player)) {
 						manager.update(player);
 						manager.previousSectionY = player.getBlockY() >> 4;
-						manager.previousViewDistance = player.getViewDistance();
+						manager.previousViewDistance = VersionUtil.getViewDistance(player);
 					}
 					if (!manager.skylightUpdates.isEmpty()) {
 						manager.updateLight(player);
@@ -78,7 +78,7 @@ public class VerticalTrackingManager {
 
 	public void update(ServerPlayerEntity player) {
 		int playerCenterY = player.getBlockY() >> 4;
-		int range = player.getViewDistance();
+		int range = VersionUtil.getViewDistance(player);
 		for (Iterator<Long2ObjectMap.Entry<ChunkState>> iterator = this.chunkBounds.long2ObjectEntrySet().iterator(); iterator.hasNext(); ) {
 			Long2ObjectMap.Entry<ChunkState> entry = iterator.next();
 			int chunkX = ChunkPos.getPackedX(entry.getLongKey());
@@ -163,8 +163,8 @@ public class VerticalTrackingManager {
 	public void onChunkLoaded(ServerPlayerEntity player, int chunkX, int chunkZ) {
 		ChunkState bound = this.chunkBounds.computeIfAbsent(ChunkPos.toLong(chunkX, chunkZ), (long packedPos) -> new ChunkState());
 		int playerCenterY = player.getBlockY() >> 4;
-		bound.minY = Math.max(playerCenterY - player.getViewDistance(), player.getWorld().getBottomSectionCoord());
-		bound.maxY = Math.min(playerCenterY + player.getViewDistance(), player.getWorld().getTopSectionCoord());
+		bound.minY = Math.max(playerCenterY - VersionUtil.getViewDistance(player), player.getWorld().getBottomSectionCoord());
+		bound.maxY = Math.min(playerCenterY + VersionUtil.getViewDistance(player), player.getWorld().getTopSectionCoord());
 		LoadRangePacket.send(player, chunkX, chunkZ, bound.minY, bound.maxY);
 		for (int sectionY = bound.minY; sectionY <= bound.maxY; sectionY++) {
 			VertigoServerEvents.SECTION_LOADED.invoker().onSectionLoaded(player, chunkX, sectionY, chunkZ);

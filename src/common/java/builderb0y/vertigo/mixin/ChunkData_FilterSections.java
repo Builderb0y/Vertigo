@@ -16,6 +16,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.WorldChunk;
 
+import builderb0y.vertigo.VersionUtil;
 import builderb0y.vertigo.Vertigo;
 
 @Mixin(ChunkData.class)
@@ -41,7 +42,7 @@ public class ChunkData_FilterSections {
 		ServerPlayerEntity player = Vertigo.SYNCING_PLAYER.get();
 		if (player != null) {
 			int playerSectionY = player.getBlockY() >> 4;
-			int playerViewDistance = player.getViewDistance();
+			int playerViewDistance = VersionUtil.getViewDistance(player);
 			return Math.abs(sectionY - playerSectionY) <= playerViewDistance;
 		}
 		return true;
