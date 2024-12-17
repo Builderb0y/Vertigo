@@ -9,13 +9,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents.AfterClientWorldChange;
-import net.fabricmc.loader.api.FabricLoader;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.packet.s2c.play.LightUpdateS2CPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -36,18 +30,6 @@ public class VerticalTrackingManager {
 	public static final WeakHashMap<ServerPlayerEntity, VerticalTrackingManager> PLAYERS = new WeakHashMap<>();
 	/** used on the logical client to refer to the current player. */
 	public static VerticalTrackingManager CLIENT;
-
-	static {
-		if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
-			ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register(new AfterClientWorldChange() {
-
-				@Override
-				public void afterWorldChange(MinecraftClient client, ClientWorld world) {
-					CLIENT = world != null ? new VerticalTrackingManager() : null;
-				}
-			});
-		}
-	}
 
 	/** all chunks currently being tracked. */
 	public final Long2ObjectOpenHashMap<ChunkState> chunkBounds = new Long2ObjectOpenHashMap<>();

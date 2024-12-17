@@ -12,8 +12,10 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
@@ -56,7 +58,13 @@ implements CustomPayload {
 		WorldChunk chunk = (WorldChunk)(world.getChunk(this.sectionX, this.sectionZ, ChunkStatus.FULL, false));
 		if (chunk == null) return;
 		VertigoClientEvents.SECTION_UNLOADED.invoker().onSectionUnloaded(this.sectionX, this.sectionY, this.sectionZ);
-		chunk.getSectionArray()[chunk.sectionCoordToIndex(this.sectionY)] = new ChunkSection(world.getRegistryManager().getOrThrow(RegistryKeys.BIOME));
+		Registry<Biome> biomeRegistry;
+		#if MC_VERSION >= MC_1_21_3
+			biomeRegistry = world.getRegistryManager().getOrThrow(RegistryKeys.BIOME);
+		#else
+			biomeRegistry = world.getRegistryManager().get(RegistryKeys.BIOME);
+		#endif
+		chunk.getSectionArray()[chunk.sectionCoordToIndex(this.sectionY)] = new ChunkSection(biomeRegistry);
 		chunk.getBlockEntities().values().removeIf((BlockEntity blockEntity) -> {
 			if (blockEntity.getPos().getY() >> 4 == this.sectionY) {
 				blockEntity.markRemoved();
@@ -76,7 +84,15 @@ implements CustomPayload {
 			}
 			return false;
 		});
-		world.getChunkManager().chunks.refreshSections(chunk);
-		world.scheduleChunkRenders(this.sectionX - 1, this.sectionY - 1, this.sectionZ - 1, this.sectionX + 1, this.sectionY + 1, this.sectionZ + 1);
+		#if MC_VERSION >= MC_1_21_4
+			world.getChunkManager().chunks.refreshSections(chunk);
+		#elif MC_VERSION >= MC_1_21_2
+			//if I'm reading minecraft's code correctly, I should provide false here,
+			//but that breaks things, and true works flawlessly.
+			//I do not understand why.
+			world.getChunkManager().chunks.onSectionStatusChanged(this.sectionX, this.sectionY, this.sectionZ, true);
+		#endif
+
+		world.scheduleBlockRenders(this.sectionX, this.sectionY, this.sectionZ);
 	}
 }

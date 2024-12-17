@@ -1,0 +1,24 @@
+{
+	"schemaVersion": 1,
+	"id": "vertigo",
+	"version": "${version}",
+	"name": "Vertigo",
+	"description": "Skips sending blocks to the client when they are too far above or below you.",
+	"authors": [ "Builderb0y" ],
+	"contact": {},
+	"license": "MIT",
+	"icon": "assets/vertigo/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [ "builderb0y.vertigo.Vertigo" ],
+		"client": [ "builderb0y.vertigo.VertigoClient" ]
+	},
+	"mixins": [
+		"vertigo.mixins.json"
+	],
+	"depends": {
+		"fabricloader": "*",
+		"fabric": "*",
+		"minecraft": "1.20.6"
+	}
+}

@@ -39,7 +39,11 @@ public class Vertigo implements ModInitializer {
 		VertigoNetworking.init();
 		ServerLifecycleEvents.SERVER_STARTED.register((MinecraftServer server) -> {
 			SERVER = server;
-			EMPTY_SECTION = new ChunkSection(server.getRegistryManager().getOrThrow(RegistryKeys.BIOME));
+			#if MC_VERSION >= MC_1_21_2
+				EMPTY_SECTION = new ChunkSection(server.getRegistryManager().getOrThrow(RegistryKeys.BIOME));
+			#else
+				EMPTY_SECTION = new ChunkSection(server.getRegistryManager().get(RegistryKeys.BIOME));
+			#endif
 		});
 		ServerLifecycleEvents.SERVER_STOPPED.register((MinecraftServer server) -> {
 			SERVER = null;

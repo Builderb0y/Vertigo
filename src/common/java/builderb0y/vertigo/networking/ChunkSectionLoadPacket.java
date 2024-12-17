@@ -110,7 +110,14 @@ implements CustomPayload {
 				blockEntity.read(blockEntityData.nbt, world.getRegistryManager());
 			}
 		}
-		world.getChunkManager().chunks.refreshSections(chunk);
+		#if MC_VERSION >= MC_1_21_4
+			world.getChunkManager().chunks.refreshSections(chunk);
+		#elif MC_VERSION >= MC_1_21_2
+			//if I'm reading minecraft's code correctly, I should provide true here,
+			//but that breaks things, and false works flawlessly.
+			//I do not understand why.
+			world.getChunkManager().chunks.onSectionStatusChanged(this.sectionX, this.sectionY, this.sectionZ, false);
+		#endif
 		if (this.skylightData.isPresent()) {
 			ChunkSectionPos sectionPos = ChunkSectionPos.from(this.sectionX, this.sectionY, this.sectionZ);
 			world.getLightingProvider().enqueueSectionData(
@@ -120,7 +127,7 @@ implements CustomPayload {
 			);
 			world.getLightingProvider().setSectionStatus(sectionPos, section.isEmpty());
 		}
-		world.scheduleChunkRenders(this.sectionX - 1, this.sectionY - 1, this.sectionZ - 1, this.sectionX + 1, this.sectionY + 1, this.sectionZ + 1);
+		world.scheduleBlockRenders(this.sectionX, this.sectionY, this.sectionZ);
 		VertigoClientEvents.SECTION_LOADED.invoker().onSectionLoaded(this.sectionX, this.sectionY, this.sectionZ);
 	}
 

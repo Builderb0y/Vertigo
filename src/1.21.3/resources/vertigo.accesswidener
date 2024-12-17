@@ -1,0 +1,14 @@
+accessWidener v2 named
+
+accessible class net/minecraft/network/packet/s2c/play/ChunkData$BlockEntityData
+accessible field net/minecraft/network/packet/s2c/play/ChunkData$BlockEntityData y I
+
+accessible field net/minecraft/world/chunk/WorldChunk blockEntityTickers Ljava/util/Map;
+accessible class net/minecraft/world/chunk/WorldChunk$WrappedBlockEntityTickInvoker
+accessible method net/minecraft/world/chunk/WorldChunk$WrappedBlockEntityTickInvoker setWrapped (Lnet/minecraft/world/chunk/BlockEntityTickInvoker;)V
+accessible field net/minecraft/world/chunk/WorldChunk EMPTY_BLOCK_ENTITY_TICKER Lnet/minecraft/world/chunk/BlockEntityTickInvoker;
+
+accessible field net/minecraft/client/world/ClientChunkManager chunks Lnet/minecraft/client/world/ClientChunkManager$ClientChunkMap;
+accessible class net/minecraft/client/world/ClientChunkManager$ClientChunkMap
+
+accessible field net/minecraft/world/chunk/light/ChunkSkyLight palette Lnet/minecraft/util/collection/PaletteStorage;
