@@ -1,0 +1,217 @@
+plugins() {
+	id('fabric-loom') version('1.9-SNAPSHOT')
+}
+
+version = project.mod_version
+group = project.maven_group
+
+sourceSets() {
+	main() {
+		java() {
+			srcDirs = Arrays.asList(
+				file("src/common/java"),
+				file("src/${project.minecraft_version}/java")
+			)
+		}
+		resources() {
+			srcDirs = Arrays.asList(
+				file("src/common/resources"),
+				file("src/${project.minecraft_version}/resources")
+			)
+		}
+	}
+}
+
+repositories() {
+	// Add repositories to retrieve artifacts from in here.
+	// You should only use this when depending on other mods because
+	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
+	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
+	// for more information about repositories.
+
+	//manifold
+	maven() {
+		url('https://oss.sonatype.org/content/repositories/snapshots/')
+	}
+}
+
+dependencies() {
+	// To change the versions see the gradle.properties file
+	minecraft("com.mojang:minecraft:${ project.minecraft_version }")
+	mappings("net.fabricmc:yarn:${ project.yarn_mappings }:v2")
+	modImplementation("net.fabricmc:fabric-loader:${ project.loader_version }")
+
+	modImplementation("net.fabricmc.fabric-api:fabric-api:${ project.fabric_version }")
+
+	annotationProcessor('systems.manifold:manifold-preprocessor:2024.1.37')
+}
+
+loom() {
+	accessWidenerPath = file("src/${project.minecraft_version}/resources/vertigo.accesswidener")
+}
+
+processResources() {
+	inputs.property("version", project.version)
+	inputs.property("minecraft_version", project.minecraft_version)
+	inputs.property("loader_version", project.loader_version)
+	filteringCharset("UTF-8")
+
+	filesMatching("fabric.mod.json") {
+		expand(
+			"version":           project.version,
+			"minecraft_version": project.minecraft_version,
+			"loader_version":    project.loader_version
+		)
+	}
+}
+
+static int compareVersions(String versionA, String versionB) {
+	String[] splitA = versionA.split('\\.')
+	String[] splitB = versionB.split('\\.')
+	for (int index = 0; index < 3; index++) {
+		int compare = Integer.compare(
+			Integer.parseInt(splitA[index]),
+			Integer.parseInt(splitB[index])
+		)
+		if (compare != 0) return compare
+	}
+	return 0
+}
+
+def targetJavaVersion = compareVersions(project.minecraft_version, '1.20.5') >= 0 ? 21 : 17
+tasks.withType(JavaCompile).configureEach() {
+	// ensure that the encoding is set to UTF-8, no matter what the system default is
+	// this fixes some edge cases with special characters not displaying correctly
+	// see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
+	// If Javadoc is generated, this must be specified in that task too.
+	it.options.encoding = "UTF-8"
+	if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+		it.options.release.set(targetJavaVersion)
+	}
+	it.options.compilerArgs.add('-Xplugin:Manifold')
+}
+
+java() {
+	def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+	if (JavaVersion.current() < javaVersion) {
+		toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+	}
+	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+	// if it is present.
+	// If you remove this line, sources will not be generated.
+	withSourcesJar()
+}
+
+jar() {
+	from("LICENSE") {
+		rename() { "${ it }_${ project.archivesBaseName }" }
+	}
+}
+
+tasks.withType(AbstractArchiveTask).configureEach() {
+	archiveVersion = "$version-MC$minecraft_version"
+}
+
+class Version {
+
+	int major
+	int minor
+
+	Version(int major, int minor) {
+		this.major = major
+		this.minor = minor
+	}
+
+	static String pad(int number) {
+		return number < 10 ? "0$number" : number.toString()
+	}
+
+	String shorthand() {
+		return "1${pad(major)}${pad(minor)}"
+	}
+
+	String longhand() {
+		return "1.${major}.${minor}"
+	}
+}
+
+Collection<Map.Entry<String, String>> loadProperties(String fileName) {
+	Properties properties = new Properties()
+	try (InputStream stream = new FileInputStream(file(fileName))) {
+		properties.load(stream)
+	}
+	return properties.entrySet()
+}
+
+Map<String, String> loadVersion(Version version) {
+	return (
+	new HashMap<String, String>()
+	.putAll(loadProperties('gradle_common.properties'))
+	.putAll(loadProperties("gradle_${version.longhand()}.properties"))
+	)
+}
+
+//this is the dumbest thing I've ever done with gradle.
+//its sole purpose is to display the current
+//version in the gradle window in intellij.
+tasks.register("Currently V$project.version for MC $project.minecraft_version") {
+	group('versions')
+	doFirst() {
+		println("Currently V$project.version for MC $project.minecraft_version")
+	}
+}
+
+for (Version version in [
+	new Version(20, 1),
+	new Version(20, 2),
+	new Version(20, 4),
+	new Version(20, 6),
+	new Version(21, 1),
+	new Version(21, 3),
+	new Version(21, 4)
+]) {
+	Version capturedVersion = version
+	tasks.register("Switch to ${capturedVersion.longhand()}", WriteProperties) {
+		group('versions')
+		destinationFile = file('gradle.properties')
+		comment('This file was automatically generated by gradle. Do not touch!')
+		properties(loadVersion(capturedVersion))
+		doLast() {
+			file('build.properties').text = (
+"""#This file was automatically generated by gradle. Do not touch!
+MC_1_20_0=12000
+MC_1_20_1=12001
+MC_1_20_2=12002
+MC_1_20_3=12003
+MC_1_20_4=12004
+MC_1_20_5=12005
+MC_1_20_6=12006
+MC_1_21_0=12100
+MC_1_21_1=12101
+MC_1_21_2=12102
+MC_1_21_3=12103
+MC_1_21_4=12104
+MC_VERSION=${capturedVersion.shorthand()}"""
+			)
+		}
+	}
+}
+
+// configure the maven publication
+/*
+publishing() {
+	publications() {
+		create("mavenJava", MavenPublication) {
+			artifactId = project.archives_base_name
+			from(components.java)
+		}
+	}
+
+	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+	repositories {
+		// Add repositories to publish to here.
+		// Notice: This block does NOT have the same function as the block in the top level.
+		// The repositories here will be used for publishing your artifact, not for
+		// retrieving dependencies.
+	}
+}*/

@@ -1,0 +1,3 @@
+back-port to older MC versions.
+test with other popular mods like sodium and lithium.
+find more vanilla packets being sent when they shouldn't be.

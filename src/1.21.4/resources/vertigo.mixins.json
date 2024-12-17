@@ -1,0 +1,17 @@
+{
+	"required": true,
+	"minVersion": "0.8",
+	"package": "builderb0y.vertigo.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"ChunkData_FilterSections",
+		"ChunkDataSender_TrackPlayer",
+		"ChunkHolder_FilterSections",
+		"PlayerLookup_AutomaticCompatibility",
+		"WorldChunk_SyncSkylight"
+	],
+	"client": [],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

@@ -1,0 +1,9 @@
+/.idea/
+/out/
+/.gradle
+/build/
+/run/
+/dependencies/
+/logs/
+/releases/
+/server/
