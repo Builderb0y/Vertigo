@@ -11,9 +11,10 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.PaletteStorage;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.LightType;
@@ -23,15 +24,45 @@ import net.minecraft.world.chunk.light.ChunkLightingView;
 
 import builderb0y.vertigo.Vertigo;
 
+#if MC_VERSION >= MC_1_20_5
+	import net.minecraft.network.codec.PacketCodec;
+	import net.minecraft.network.codec.PacketCodecs;
+#else
+	import net.fabricmc.fabric.api.networking.v1.PacketType;
+#endif
+
 public record SkylightUpdatePacket(
 	int chunkX,
 	int chunkZ,
 	IntArrayList skyPositions
 )
-implements CustomPayload {
+implements VertigoPacket {
 
-	public static final PacketCodec<ByteBuf, SkylightUpdatePacket> PACKET_CODEC = PacketCodec.of(SkylightUpdatePacket::write, SkylightUpdatePacket::read);
-	public static final Id<SkylightUpdatePacket> ID = new Id<>(Vertigo.modID("skylight_update"));
+	#if MC_VERSION >= MC_1_20_5
+
+		public static final PacketCodec<ByteBuf, SkylightUpdatePacket> PACKET_CODEC = PacketCodec.of(SkylightUpdatePacket::write, SkylightUpdatePacket::read);
+		public static final CustomPayload.Id<SkylightUpdatePacket> ID = new CustomPayload.Id<>(Vertigo.modID("skylight_update"));
+
+		@Override
+		public Id<? extends CustomPayload> getId() {
+			return ID;
+		}
+
+	#else
+
+		public static final PacketType<SkylightUpdatePacket> TYPE = PacketType.create(Vertigo.modID("skylight_update"), SkylightUpdatePacket::read);
+
+		@Override
+		public void write(PacketByteBuf buffer) {
+			this.write((ByteBuf)(buffer));
+		}
+
+		@Override
+		public PacketType<?> getType() {
+			return TYPE;
+		}
+
+	#endif
 
 	public static SkylightUpdatePacket read(ByteBuf buffer) {
 		int chunkX = buffer.readInt();
@@ -101,11 +132,6 @@ implements CustomPayload {
 		return packed & 0xFFFF;
 	}
 
-	@Override
-	public Id<? extends CustomPayload> getId() {
-		return ID;
-	}
-
 	public static void send(ServerPlayerEntity player, int chunkX, int chunkZ, BitSet mask) {
 		WorldChunk chunk = (WorldChunk)(player.getServerWorld().getChunk(chunkX, chunkZ, ChunkStatus.FULL, false));
 		if (chunk == null) return;
@@ -117,8 +143,9 @@ implements CustomPayload {
 		ServerPlayNetworking.send(player, new SkylightUpdatePacket(chunk.getPos().x, chunk.getPos().z, queuedPositions));
 	}
 
+	@Override
 	@Environment(EnvType.CLIENT)
-	public void process(ClientPlayNetworking.Context context) {
+	public void process() {
 		ClientWorld world = MinecraftClient.getInstance().world;
 		if (world == null) return;
 		WorldChunk chunk = (WorldChunk)(world.getChunk(this.chunkX, this.chunkZ, ChunkStatus.FULL, false));

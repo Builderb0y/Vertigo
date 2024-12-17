@@ -3,6 +3,7 @@ package builderb0y.vertigo;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import org.spongepowered.asm.mixin.MixinEnvironment;
 
 import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
 import net.minecraft.registry.RegistryKeys;
@@ -51,6 +52,7 @@ public class Vertigo implements ModInitializer {
 		});
 		ServerTickEvents.END_SERVER_TICK.register(VerticalTrackingManager::tickAll);
 
+		MixinEnvironment.getCurrentEnvironment().audit();
 		/*
 		VertigoClientEvents.SECTION_LOADED.register((sectionX, sectionY, sectionZ) -> System.out.println("CLIENT LOAD " + sectionX + ", " + sectionY + ", " + sectionZ));
 		VertigoClientEvents.SECTION_UNLOADED.register((sectionX, sectionY, sectionZ) -> System.out.println("CLIENT UNLOAD " + sectionX + ", " + sectionY + ", " + sectionZ));
