@@ -13,6 +13,7 @@
 		"main": [ "builderb0y.vertigo.Vertigo" ],
 		"client": [ "builderb0y.vertigo.VertigoClient" ]
 	},
+	"accessWidener": "vertigo.accesswidener",
 	"mixins": [
 		"vertigo.mixins.json"
 	],
