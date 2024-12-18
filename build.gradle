@@ -44,6 +44,8 @@ dependencies() {
 	modImplementation("net.fabricmc.fabric-api:fabric-api:${ project.fabric_version }")
 
 	annotationProcessor('systems.manifold:manifold-preprocessor:2024.1.37')
+
+	modRuntimeOnly(fileTree(file("dependencies/${ project.minecraft_version }/runtimeOnly")))
 }
 
 loom() {

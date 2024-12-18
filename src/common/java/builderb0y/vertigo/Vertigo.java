@@ -48,7 +48,7 @@ public class Vertigo implements ModInitializer {
 		});
 		ServerTickEvents.END_SERVER_TICK.register(VerticalTrackingManager::tickAll);
 
-		MixinEnvironment.getCurrentEnvironment().audit();
+		//MixinEnvironment.getCurrentEnvironment().audit();
 		/*
 		VertigoClientEvents.SECTION_LOADED.register((sectionX, sectionY, sectionZ) -> System.out.println("CLIENT LOAD " + sectionX + ", " + sectionY + ", " + sectionZ));
 		VertigoClientEvents.SECTION_UNLOADED.register((sectionX, sectionY, sectionZ) -> System.out.println("CLIENT UNLOAD " + sectionX + ", " + sectionY + ", " + sectionZ));

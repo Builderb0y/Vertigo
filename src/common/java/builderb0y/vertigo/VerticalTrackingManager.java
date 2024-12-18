@@ -99,7 +99,7 @@ public class VerticalTrackingManager {
 				bound.minY = playerCenterY - range;
 				bound.maxY = playerCenterY + range;
 				for (int sectionY = bound.minY; sectionY <= bound.maxY; sectionY++) {
-					ChunkSectionLoadPacket.send(player, chunk, bound.maxY);
+					ChunkSectionLoadPacket.send(player, chunk, sectionY);
 					VertigoServerEvents.SECTION_LOADED.invoker().onSectionLoaded(player, chunkX, bound.maxY, chunkZ);
 				}
 				changed = true;
