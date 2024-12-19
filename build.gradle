@@ -114,6 +114,29 @@ tasks.withType(AbstractArchiveTask).configureEach() {
 	archiveVersion = "$version-MC$minecraft_version"
 }
 
+task copyToReleases(type: Copy) {
+	dependsOn(remapJar)
+	from("$projectDir/build/libs") {
+		include("$archivesBaseName-${project.version}-MC${minecraft_version}.jar")
+		rename() {
+			"$archivesBaseName-$project.version-MC${minecraft_version}.jar"
+		}
+	}
+	into(file("releases/${project.version.toString().replace('.' as char, '/' as char)}"))
+}
+
+test() {
+	doFirst() {
+		if (file("releases/${project.version.toString().replace('.' as char, '/' as char)}/$archivesBaseName-$project.version-MC${minecraft_version}.jar").exists()) {
+			throw new IllegalStateException("Release file $project.version-MC$minecraft_version already exists. If you intend to overwrite this file, delete it first. Otherwise, you probably forgot to bump the version.")
+		}
+	}
+}
+
+build() {
+	dependsOn(copyToReleases)
+}
+
 class Version {
 
 	int major
