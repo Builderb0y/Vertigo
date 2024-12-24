@@ -24,14 +24,17 @@ Despite this, I do expect some mods to have issues still. If you are an end user
 
 # Q&A
 
-Q: Does this mod have to be installed on both the client and the server to work?
+Q: Does it help with vanilla/non-tall worlds?  
+A: Not really, unless you have a very small view distance.
+
+Q: Does this mod need to be installed on both the client and the server to work?  
 A: Yes.
 
-Q: Will things break if I only have it installed on one side?
+Q: Will things break if I only have it installed on one side?  
 A: Hopefully not.
 
-Q: Does Vertigo affect any server-side mechanics? Like mob spawning or block ticking?
+Q: Does Vertigo affect any server-side mechanics? Like mob spawning or block ticking?  
 A: No.
 
-Q: What counts as "near the player vertically"?
+Q: What counts as "near the player vertically"?  
 A: The vertical sync distance is the same as the horizontal sync distance, which is the same as your view distance (or the server's view distance; whichever one is smaller).
