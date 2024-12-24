@@ -8,7 +8,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,11 +18,11 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.ChunkData;
-import net.minecraft.network.packet.s2c.play.ChunkData.BlockEntityData;
 import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.world.LightType;
@@ -42,7 +41,6 @@ import builderb0y.vertigo.api.VertigoClientEvents;
 	import net.minecraft.network.codec.PacketCodec;
 	import net.minecraft.network.codec.PacketCodecs;
 	import net.minecraft.network.packet.CustomPayload;
-	import net.minecraft.network.packet.CustomPayload.Id;
 #else
 	import net.fabricmc.fabric.api.networking.v1.PacketType;
 #endif
@@ -59,22 +57,24 @@ public record ChunkSectionLoadPacket(
 	Optional<byte[]> skylightData,
 	List<BlockEntityData> blockEntities
 )
-implements VertigoPacket {
+implements VertigoS2CPacket {
+
+	public static final Identifier PACKET_ID = Vertigo.modID("section_load");
 
 	#if MC_VERSION >= MC_1_20_5
 
 		public static final PacketCodec<RegistryByteBuf, ChunkSectionLoadPacket> PACKET_CODEC = (
 			PacketCodec.tuple(
-				PacketCodecs.INTEGER,                                                      ChunkSectionLoadPacket::sectionX,
-				PacketCodecs.INTEGER,                                                      ChunkSectionLoadPacket::sectionY,
-				PacketCodecs.INTEGER,                                                      ChunkSectionLoadPacket::sectionZ,
-				PacketCodecs.BYTE_ARRAY,                                                   ChunkSectionLoadPacket::sectionData,
+				PacketCodecs.INTEGER,                                              ChunkSectionLoadPacket::sectionX,
+				PacketCodecs.INTEGER,                                              ChunkSectionLoadPacket::sectionY,
+				PacketCodecs.INTEGER,                                              ChunkSectionLoadPacket::sectionZ,
+				PacketCodecs.BYTE_ARRAY,                                           ChunkSectionLoadPacket::sectionData,
 				PacketCodecs.optional(VertigoNetworking.fixedSizeByteArray(2048)), ChunkSectionLoadPacket::skylightData,
-				BlockEntityData.PACKET_CODEC.collect(PacketCodecs.toList(4096)),           ChunkSectionLoadPacket::blockEntities,
+				BlockEntityData.PACKET_CODEC.collect(PacketCodecs.toList(4096)),   ChunkSectionLoadPacket::blockEntities,
 				ChunkSectionLoadPacket::new
 			)
 		);
-		public static final Id<ChunkSectionLoadPacket> ID = new Id<>(Vertigo.modID("section_load"));
+		public static final Id<ChunkSectionLoadPacket> ID = new Id<>(PACKET_ID);
 
 		@Override
 		public Id<? extends CustomPayload> getId() {
@@ -83,7 +83,7 @@ implements VertigoPacket {
 
 	#else
 
-		public static final PacketType<ChunkSectionLoadPacket> TYPE = PacketType.create(Vertigo.modID("section_load"), ChunkSectionLoadPacket::read);
+		public static final PacketType<ChunkSectionLoadPacket> TYPE = PacketType.create(PACKET_ID, ChunkSectionLoadPacket::read);
 
 		public static ChunkSectionLoadPacket read(PacketByteBuf buffer) {
 			int sectionX = buffer.readInt();

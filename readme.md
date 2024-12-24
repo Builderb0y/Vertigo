@@ -21,3 +21,17 @@ Because the client does not know about all the blocks in a chunk, it is expected
 	* Listing players which know about a specific chunk section.
 
 Despite this, I do expect some mods to have issues still. If you are an end user, please do not expect this mod to work out-of-the-box with every other mod just yet. Some mods will need to make changes in order to work with Vertigo. If you are a mod developer and think that a conflict is on my end, feel free to open an issue about it.
+
+# Q&A
+
+Q: Does this mod have to be installed on both the client and the server to work?
+A: Yes.
+
+Q: Will things break if I only have it installed on one side?
+A: Hopefully not.
+
+Q: Does Vertigo affect any server-side mechanics? Like mob spawning or block ticking?
+A: No.
+
+Q: What counts as "near the player vertically"?
+A: The vertical sync distance is the same as the horizontal sync distance, which is the same as your view distance (or the server's view distance; whichever one is smaller).

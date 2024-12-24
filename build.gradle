@@ -1,3 +1,5 @@
+import java.lang.reflect.Method
+
 plugins() {
 	id('fabric-loom') version('1.9-SNAPSHOT')
 }
@@ -46,6 +48,9 @@ dependencies() {
 	annotationProcessor('systems.manifold:manifold-preprocessor:2024.1.37')
 
 	modRuntimeOnly(fileTree(file("dependencies/${ project.minecraft_version }/runtimeOnly")))
+
+	testImplementation('org.junit.jupiter:junit-jupiter-api:5.3.0-M1')
+	testImplementation('org.junit.jupiter:junit-jupiter-engine:5.3.0-M1')
 }
 
 loom() {
@@ -126,6 +131,7 @@ task copyToReleases(type: Copy) {
 }
 
 test() {
+	useJUnitPlatform()
 	doFirst() {
 		if (file("releases/${project.version.toString().replace('.' as char, '/' as char)}/$archivesBaseName-$project.version-MC${minecraft_version}.jar").exists()) {
 			throw new IllegalStateException("Release file $project.version-MC$minecraft_version already exists. If you intend to overwrite this file, delete it first. Otherwise, you probably forgot to bump the version.")
@@ -135,6 +141,19 @@ test() {
 
 build() {
 	dependsOn(copyToReleases)
+}
+
+runClient() {
+	workingDir = file('run')
+}
+
+runServer() {
+	//can't seem to find any other way to do this...
+	Method getInternalRunDir = it.getClass().getDeclaredMethod('getInternalRunDir')
+	getInternalRunDir.setAccessible(true)
+	getInternalRunDir.invoke(it).set('server')
+	workingDir = file('server')
+	jvmArgs("-Duser.dir=${file('server').getAbsolutePath()}")
 }
 
 class Version {

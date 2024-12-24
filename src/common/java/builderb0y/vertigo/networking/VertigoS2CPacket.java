@@ -7,7 +7,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketSender;
 
 import net.minecraft.client.network.ClientPlayerEntity;
 
-public interface VertigoPacket
+public interface VertigoS2CPacket
 #if MC_VERSION >= MC_1_20_5
 	extends net.minecraft.network.packet.CustomPayload
 #else

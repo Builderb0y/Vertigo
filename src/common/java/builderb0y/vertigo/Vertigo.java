@@ -6,7 +6,6 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 
 import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
-import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -21,6 +20,10 @@ public class Vertigo implements ModInitializer {
 	public static final String
 		MODID   = "vertigo",
 		MODNAME = "Vertigo";
+
+	public static final boolean
+		AUDIT        = false,
+		PRINT_EVENTS = false;
 
 	/** used by some mixins to keep track of which player a packet is being synced to. */
 	public static final ThreadLocal<ServerPlayerEntity> SYNCING_PLAYER = new ThreadLocal<>();
@@ -46,15 +49,17 @@ public class Vertigo implements ModInitializer {
 			SERVER = null;
 			EMPTY_SECTION = null;
 		});
-		ServerTickEvents.END_SERVER_TICK.register(VerticalTrackingManager::tickAll);
+		ServerTickEvents.END_SERVER_TICK.register(SectionTrackingManager::tickAll);
 
-		//MixinEnvironment.getCurrentEnvironment().audit();
-		/*
-		VertigoClientEvents.SECTION_LOADED.register((sectionX, sectionY, sectionZ) -> System.out.println("CLIENT LOAD " + sectionX + ", " + sectionY + ", " + sectionZ));
-		VertigoClientEvents.SECTION_UNLOADED.register((sectionX, sectionY, sectionZ) -> System.out.println("CLIENT UNLOAD " + sectionX + ", " + sectionY + ", " + sectionZ));
-		VertigoServerEvents.SECTION_LOADED.register((player, sectionX, sectionY, sectionZ) -> System.out.println("SERVER LOAD " + sectionX + ", " + sectionY + ", " + sectionZ));
-		VertigoServerEvents.SECTION_UNLOADED.register((player, sectionX, sectionY, sectionZ) -> System.out.println("SERVER UNLOAD " + sectionX + ", " + sectionY + ", " + sectionZ));
-		//*/
+		if (AUDIT) {
+			MixinEnvironment.getCurrentEnvironment().audit();
+		}
+		if (PRINT_EVENTS) {
+			VertigoClientEvents.SECTION_LOADED.register((sectionX, sectionY, sectionZ) -> System.out.println("CLIENT LOAD " + sectionX + ", " + sectionY + ", " + sectionZ));
+			VertigoClientEvents.SECTION_UNLOADED.register((sectionX, sectionY, sectionZ) -> System.out.println("CLIENT UNLOAD " + sectionX + ", " + sectionY + ", " + sectionZ));
+			VertigoServerEvents.SECTION_LOADED.register((player, sectionX, sectionY, sectionZ) -> System.out.println("SERVER LOAD " + sectionX + ", " + sectionY + ", " + sectionZ));
+			VertigoServerEvents.SECTION_UNLOADED.register((player, sectionX, sectionY, sectionZ) -> System.out.println("SERVER UNLOAD " + sectionX + ", " + sectionY + ", " + sectionZ));
+		}
 	}
 
 	public static Identifier modID(String path) {

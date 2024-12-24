@@ -13,7 +13,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
-import builderb0y.vertigo.VerticalTrackingManager;
+import builderb0y.vertigo.TrackingManager;
 
 public class VertigoAPI {
 
@@ -43,7 +43,7 @@ public class VertigoAPI {
 			return isSectionLoadedClient(player, sectionX, sectionY, sectionZ);
 		}
 		else {
-			VerticalTrackingManager manager = VerticalTrackingManager.PLAYERS.get(player);
+			TrackingManager manager = TrackingManager.PLAYERS.get(player);
 			return manager != null && manager.isLoaded(sectionX, sectionY, sectionZ);
 		}
 	}
@@ -51,7 +51,7 @@ public class VertigoAPI {
 	@Environment(EnvType.CLIENT)
 	private static boolean isSectionLoadedClient(PlayerEntity player, int sectionX, int sectionY, int sectionZ) {
 		if (player == MinecraftClient.getInstance().player) {
-			return VerticalTrackingManager.CLIENT.isLoaded(sectionX, sectionY, sectionZ);
+			return TrackingManager.CLIENT.isLoaded(sectionX, sectionY, sectionZ);
 		}
 		else {
 			return false;
@@ -75,11 +75,11 @@ public class VertigoAPI {
 	blocks are in the chunk section at the provided coordinates.
 	*/
 	public static Stream<ServerPlayerEntity> getPlayersTrackingSection(ServerWorld world, int sectionX, int sectionY, int sectionZ) {
-		if (VerticalTrackingManager.PLAYERS.isEmpty()) return Stream.empty();
+		if (TrackingManager.PLAYERS.isEmpty()) return Stream.empty();
 		List<ServerPlayerEntity> players = world.getPlayers();
 		if (players.isEmpty()) return Stream.empty();
 		return players.stream().filter((ServerPlayerEntity player) -> {
-			VerticalTrackingManager manager = VerticalTrackingManager.PLAYERS.get(player);
+			TrackingManager manager = TrackingManager.PLAYERS.get(player);
 			return manager != null && manager.isLoaded(sectionX, sectionY, sectionZ);
 		});
 	}

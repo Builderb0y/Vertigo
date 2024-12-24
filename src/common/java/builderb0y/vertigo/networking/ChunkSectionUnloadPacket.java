@@ -3,19 +3,14 @@ package builderb0y.vertigo.networking;
 import io.netty.buffer.ByteBuf;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.WorldChunk.WrappedBlockEntityTickInvoker;
@@ -28,7 +23,6 @@ import builderb0y.vertigo.api.VertigoClientEvents;
 	import net.minecraft.network.codec.PacketCodec;
 	import net.minecraft.network.codec.PacketCodecs;
 	import net.minecraft.network.packet.CustomPayload;
-	import net.minecraft.network.packet.CustomPayload.Id;
 #else
 	import net.fabricmc.fabric.api.networking.v1.PacketType;
 #endif
@@ -38,7 +32,9 @@ public record ChunkSectionUnloadPacket(
 	int sectionY,
 	int sectionZ
 )
-implements VertigoPacket {
+implements VertigoS2CPacket {
+
+	public static final Identifier PACKET_ID = Vertigo.modID("section_unload");
 
 	#if MC_VERSION >= MC_1_20_5
 
@@ -51,7 +47,7 @@ implements VertigoPacket {
 			)
 		);
 
-		public static final Id<ChunkSectionUnloadPacket> ID = new Id<>(Vertigo.modID("section_unload"));
+		public static final Id<ChunkSectionUnloadPacket> ID = new Id<>(PACKET_ID);
 
 		@Override
 		public Id<? extends CustomPayload> getId() {
@@ -60,7 +56,7 @@ implements VertigoPacket {
 
 	#else
 
-		public static final PacketType<ChunkSectionUnloadPacket> TYPE = PacketType.create(Vertigo.modID("section_unload"), ChunkSectionUnloadPacket::read);
+		public static final PacketType<ChunkSectionUnloadPacket> TYPE = PacketType.create(PACKET_ID, ChunkSectionUnloadPacket::read);
 
 		public static ChunkSectionUnloadPacket read(PacketByteBuf buffer) {
 			return new ChunkSectionUnloadPacket(

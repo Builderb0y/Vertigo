@@ -14,7 +14,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.WorldChunk;
 
-import builderb0y.vertigo.VerticalTrackingManager;
+import builderb0y.vertigo.TrackingManager;
 
 @Mixin(WorldChunk.class)
 public abstract class WorldChunk_SyncSkylight {
@@ -25,7 +25,7 @@ public abstract class WorldChunk_SyncSkylight {
 	private void vertigo_syncSkylight(BlockPos pos, BlockState state, boolean moved, CallbackInfoReturnable<BlockState> cir) {
 		if (this.getWorld() instanceof ServerWorld serverWorld) {
 			for (ServerPlayerEntity player : serverWorld.getPlayers()) {
-				VerticalTrackingManager manager = VerticalTrackingManager.PLAYERS.get(player);
+				TrackingManager manager = TrackingManager.PLAYERS.get(player);
 				if (manager != null) manager.onLightingChanged(pos);
 			}
 		}

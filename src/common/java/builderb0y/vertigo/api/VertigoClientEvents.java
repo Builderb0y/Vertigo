@@ -1,18 +1,9 @@
 package builderb0y.vertigo.api;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
-import net.fabricmc.loader.api.FabricLoader;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.chunk.WorldChunk;
-
-import builderb0y.vertigo.VerticalTrackingManager;
-import builderb0y.vertigo.VerticalTrackingManager.ChunkState;
 
 public class VertigoClientEvents {
 
@@ -65,25 +56,6 @@ public class VertigoClientEvents {
 			};
 		}
 	);
-
-	static {
-		if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
-			//can't use lambdas due to class loading issues on dedicated servers.
-			ClientChunkEvents.CHUNK_UNLOAD.register(new ClientChunkEvents.Unload() {
-
-				@Override
-				public void onChunkUnload(ClientWorld world, WorldChunk chunk) {
-					ChunkPos chunkPos = chunk.getPos();
-					ChunkState state = VerticalTrackingManager.CLIENT.chunkBounds.remove(chunkPos.toLong());
-					if (state != null) {
-						for (int sectionY = state.minY; sectionY <= state.maxY; sectionY++) {
-							SECTION_UNLOADED.invoker().onSectionUnloaded(chunkPos.x, sectionY, chunkPos.z);
-						}
-					}
-				}
-			});
-		}
-	}
 
 	public static interface Load {
 

@@ -2,81 +2,62 @@ package builderb0y.vertigo;
 
 import java.util.BitSet;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.WeakHashMap;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 
-import net.minecraft.network.packet.s2c.play.LightUpdateS2CPacket;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 
+import builderb0y.vertigo.api.VertigoClientEvents;
 import builderb0y.vertigo.api.VertigoServerEvents;
 import builderb0y.vertigo.networking.ChunkSectionLoadPacket;
 import builderb0y.vertigo.networking.ChunkSectionUnloadPacket;
 import builderb0y.vertigo.networking.LoadRangePacket;
 import builderb0y.vertigo.networking.SkylightUpdatePacket;
 
-public class VerticalTrackingManager {
-
-	/** used on the logical server to refer to every player on the server. */
-	public static final WeakHashMap<ServerPlayerEntity, VerticalTrackingManager> PLAYERS = new WeakHashMap<>();
-	/** used on the logical client to refer to the current player. */
-	public static VerticalTrackingManager CLIENT;
+/** used when both sides (client and server) have vertigo installed. */
+public class SectionTrackingManager extends TrackingManager {
 
 	/** all chunks currently being tracked. */
-	public final Long2ObjectOpenHashMap<ChunkState> chunkBounds = new Long2ObjectOpenHashMap<>();
+	public final Long2ObjectOpenHashMap<ChunkState> chunkBounds = new Long2ObjectOpenHashMap<>(256);
 	public final LongOpenHashSet skylightUpdates = new LongOpenHashSet();
 	public int previousSectionY, previousViewDistance;
 
-	public VerticalTrackingManager(ServerPlayerEntity player) {
+	public SectionTrackingManager() {}
+
+	public SectionTrackingManager(ServerPlayerEntity player) {
 		this.previousSectionY = player.getBlockY() >> 4;
 		this.previousViewDistance = VersionUtil.getViewDistance(player);
 	}
 
-	public VerticalTrackingManager() {}
-
+	@Override
 	public boolean isLoaded(int sectionX, int sectionY, int sectionZ) {
 		ChunkState bound = this.chunkBounds.get(ChunkPos.toLong(sectionX, sectionZ));
 		return bound != null && bound.contains(sectionY);
 	}
 
-	public static void tickAll(MinecraftServer server) {
-		if (!PLAYERS.isEmpty()) {
-			for (
-				Iterator<Map.Entry<ServerPlayerEntity, VerticalTrackingManager>> iterator = PLAYERS.entrySet().iterator();
-				iterator.hasNext();
-			) {
-				Map.Entry<ServerPlayerEntity, VerticalTrackingManager> entry = iterator.next();
-				ServerPlayerEntity player = entry.getKey();
-				VerticalTrackingManager manager = entry.getValue();
-				if (player.isDisconnected()) {
-					manager.chunkBounds.clear();
-					iterator.remove();
-				}
-				else {
-					if (manager.previousSectionY != player.getBlockY() >> 4 || manager.previousViewDistance != VersionUtil.getViewDistance(player)) {
-						manager.update(player);
-						manager.previousSectionY = player.getBlockY() >> 4;
-						manager.previousViewDistance = VersionUtil.getViewDistance(player);
-					}
-					if (!manager.skylightUpdates.isEmpty()) {
-						manager.updateLight(player);
-						manager.skylightUpdates.clear();
-					}
-				}
-			}
+	@Override
+	public void update(ServerPlayerEntity player) {
+		if (this.previousSectionY != player.getBlockY() >> 4 || this.previousViewDistance != VersionUtil.getViewDistance(player)) {
+			this.doUpdate(player);
+			this.previousSectionY = player.getBlockY() >> 4;
+			this.previousViewDistance = VersionUtil.getViewDistance(player);
+		}
+		if (!this.skylightUpdates.isEmpty()) {
+			this.updateLight(player);
+			this.skylightUpdates.clear();
 		}
 	}
 
-	public void update(ServerPlayerEntity player) {
+	public void doUpdate(ServerPlayerEntity player) {
 		int playerCenterY = player.getBlockY() >> 4;
 		int range = VersionUtil.getViewDistance(player);
 		for (Iterator<Long2ObjectMap.Entry<ChunkState>> iterator = this.chunkBounds.long2ObjectEntrySet().iterator(); iterator.hasNext(); ) {
@@ -132,6 +113,7 @@ public class VerticalTrackingManager {
 			}
 			if (changed) {
 				LoadRangePacket.send(player, chunk.getPos().x, chunk.getPos().z, bound.minY, bound.maxY);
+				/*
 				player.networkHandler.sendPacket(
 					new LightUpdateS2CPacket(
 						chunk.getPos(),
@@ -140,6 +122,7 @@ public class VerticalTrackingManager {
 						null
 					)
 				);
+				*/
 			}
 		}
 	}
@@ -160,6 +143,12 @@ public class VerticalTrackingManager {
 		}
 	}
 
+	@Override
+	public void onDisconnect() {
+		this.chunkBounds.clear();
+	}
+
+	@Override
 	public void onChunkLoaded(ServerPlayerEntity player, int chunkX, int chunkZ) {
 		ChunkState bound = this.chunkBounds.computeIfAbsent(ChunkPos.toLong(chunkX, chunkZ), (long packedPos) -> new ChunkState());
 		int playerCenterY = player.getBlockY() >> 4;
@@ -171,6 +160,7 @@ public class VerticalTrackingManager {
 		}
 	}
 
+	@Override
 	public void onChunkUnloaded(ServerPlayerEntity player, int chunkX, int chunkZ) {
 		ChunkState bounds = this.chunkBounds.remove(ChunkPos.toLong(chunkX, chunkZ));
 		if (bounds != null) {
@@ -181,6 +171,25 @@ public class VerticalTrackingManager {
 		}
 	}
 
+	@Override
+	@Environment(EnvType.CLIENT)
+	public void onChunkLoadedClient(WorldChunk chunk) {
+		//no-op; wait for LoadRangePacket to arrive.
+	}
+
+	@Override
+	@Environment(EnvType.CLIENT)
+	public void onChunkUnloadedClient(WorldChunk chunk) {
+		ChunkPos chunkPos = chunk.getPos();
+		ChunkState state = this.chunkBounds.remove(chunkPos.toLong());
+		if (state != null) {
+			for (int sectionY = state.minY; sectionY <= state.maxY; sectionY++) {
+				VertigoClientEvents.SECTION_UNLOADED.invoker().onSectionUnloaded(chunkPos.x, sectionY, chunkPos.z);
+			}
+		}
+	}
+
+	@Override
 	public void onLightingChanged(BlockPos pos) {
 		long chunkPos = ChunkPos.toLong(pos);
 		ChunkState info = this.chunkBounds.get(chunkPos);

@@ -6,7 +6,6 @@ import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
 import net.minecraft.client.MinecraftClient;
@@ -25,9 +24,7 @@ import builderb0y.vertigo.Vertigo;
 
 #if MC_VERSION >= MC_1_20_5
 	import net.minecraft.network.codec.PacketCodec;
-	import net.minecraft.network.codec.PacketCodecs;
 	import net.minecraft.network.packet.CustomPayload;
-	import net.minecraft.network.packet.CustomPayload.Id;
 #else
 	import net.fabricmc.fabric.api.networking.v1.PacketType;
 #endif
@@ -37,12 +34,14 @@ public record SkylightUpdatePacket(
 	int chunkZ,
 	IntArrayList skyPositions
 )
-implements VertigoPacket {
+implements VertigoS2CPacket {
+
+	public static final Identifier PACKET_ID = Vertigo.modID("skylight_update");
 
 	#if MC_VERSION >= MC_1_20_5
 
 		public static final PacketCodec<ByteBuf, SkylightUpdatePacket> PACKET_CODEC = PacketCodec.of(SkylightUpdatePacket::write, SkylightUpdatePacket::read);
-		public static final Id<SkylightUpdatePacket> ID = new Id<>(Vertigo.modID("skylight_update"));
+		public static final Id<SkylightUpdatePacket> ID = new Id<>(PACKET_ID);
 
 		@Override
 		public Id<? extends CustomPayload> getId() {
@@ -51,7 +50,7 @@ implements VertigoPacket {
 
 	#else
 
-		public static final PacketType<SkylightUpdatePacket> TYPE = PacketType.create(Vertigo.modID("skylight_update"), SkylightUpdatePacket::read);
+		public static final PacketType<SkylightUpdatePacket> TYPE = PacketType.create(PACKET_ID, SkylightUpdatePacket::read);
 
 		@Override
 		public void write(PacketByteBuf buffer) {
