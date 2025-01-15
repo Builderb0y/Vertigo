@@ -46,7 +46,7 @@ public class ThreadedAnvilChunkStorage_TrackPlayer {
 		return null;
 	}
 
-	@Redirect(method = "sendChunkDataPackets", at = @At(value = "INVOKE", target = "Lorg/apache/commons/lang3/mutable/MutableObject;getValue()Ljava/lang/Object;", ordinal = 1))
+	@Redirect(method = "sendChunkDataPackets", at = @At(value = "INVOKE", target = "Lorg/apache/commons/lang3/mutable/MutableObject;getValue()Ljava/lang/Object;", remap = false, ordinal = 1))
 	private Object vertigo_createNewPacket(MutableObject<?> instance, @Local(argsOnly = true) ServerPlayerEntity player, @Local(argsOnly = true) WorldChunk chunk) {
 		Vertigo.SYNCING_PLAYER.set(player);
 		try {
