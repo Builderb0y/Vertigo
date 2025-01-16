@@ -17,6 +17,7 @@ import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerLightingProvider;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
+import net.minecraft.util.Unit;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.light.LightingProvider;
@@ -41,9 +42,9 @@ public class ThreadedAnvilChunkStorage_TrackPlayer {
 	this method here is used to not create a packet
 	which will never get sent anywhere.
 	*/
-	@Redirect(method = "sendChunkDataPackets", at = @At(value = "NEW", target = "(Lnet/minecraft/world/chunk/WorldChunk;Lnet/minecraft/world/chunk/light/LightingProvider;Ljava/util/BitSet;Ljava/util/BitSet;)Lnet/minecraft/network/packet/s2c/play/ChunkDataS2CPacket;"))
-	private ChunkDataS2CPacket vertigo_dontCachePacket(WorldChunk chunk, LightingProvider lightProvider, BitSet skyBits, BitSet blockBits) {
-		return null;
+	@Redirect(method = "sendChunkDataPackets", at = @At(value = "INVOKE", target = "Lorg/apache/commons/lang3/mutable/MutableObject;getValue()Ljava/lang/Object;", remap = false, ordinal = 0))
+	private Object vertigo_dontCachePacket(MutableObject<?> object) {
+		return Unit.INSTANCE; //any non-null value will do.
 	}
 
 	@Redirect(method = "sendChunkDataPackets", at = @At(value = "INVOKE", target = "Lorg/apache/commons/lang3/mutable/MutableObject;getValue()Ljava/lang/Object;", remap = false, ordinal = 1))

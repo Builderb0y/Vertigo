@@ -1,7 +1,5 @@
 package builderb0y.vertigo.networking;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
@@ -25,7 +23,6 @@ public interface VertigoC2SPacket
 
 	#else
 
-		@Environment(EnvType.CLIENT)
 		public default void receive(ServerPlayerEntity player, PacketSender responseSender) {
 			this.process();
 		}

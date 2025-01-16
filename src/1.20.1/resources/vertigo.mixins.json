@@ -11,7 +11,7 @@
 		"WorldChunk_SyncSkylight"
 	],
 	"client": [
-		"MinecraftClient_WorldChangedHook"
+		"ClientPlayNetworkHandler_SetWorldHook"
 	],
 	"injectors": {
 		"defaultRequire": 1
