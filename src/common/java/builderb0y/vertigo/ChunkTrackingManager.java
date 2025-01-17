@@ -42,8 +42,8 @@ public class ChunkTrackingManager extends TrackingManager {
 	@Override
 	public void onChunkLoaded(ServerPlayerEntity player, int chunkX, int chunkZ) {
 		this.loadedChunks.add(ChunkPos.toLong(chunkX, chunkZ));
-		int minSection = player.getWorld().getBottomY() >> 4;
-		int maxSection = minSection + (player.getWorld().getHeight() >> 4);
+		int minSection = VersionUtil.sectionMinYInclusive(player.getWorld());
+		int maxSection = VersionUtil.sectionMaxYExclusive(player.getWorld());
 		for (int sectionY = minSection; sectionY < maxSection; sectionY++) {
 			VertigoServerEvents.SECTION_LOADED.invoker().onSectionLoaded(player, chunkX, sectionY, chunkZ);
 		}
@@ -52,8 +52,8 @@ public class ChunkTrackingManager extends TrackingManager {
 	@Override
 	public void onChunkUnloaded(ServerPlayerEntity player, int chunkX, int chunkZ) {
 		this.loadedChunks.remove(ChunkPos.toLong(chunkX, chunkZ));
-		int minSection = player.getWorld().getBottomY() >> 4;
-		int maxSection = minSection + (player.getWorld().getHeight() >> 4);
+		int minSection = VersionUtil.sectionMinYInclusive(player.getWorld());
+		int maxSection = VersionUtil.sectionMaxYExclusive(player.getWorld());
 		for (int sectionY = minSection; sectionY < maxSection; sectionY++) {
 			VertigoServerEvents.SECTION_UNLOADED.invoker().onSectionUnloaded(player, chunkX, sectionY, chunkZ);
 		}
@@ -63,8 +63,8 @@ public class ChunkTrackingManager extends TrackingManager {
 	@Environment(EnvType.CLIENT)
 	public void onChunkLoadedClient(WorldChunk chunk) {
 		this.loadedChunks.add(chunk.getPos().toLong());
-		int minSection = chunk.getBottomY() >> 4;
-		int maxSection = minSection + (chunk.getHeight() >> 4);
+		int minSection = VersionUtil.sectionMinYInclusive(chunk);
+		int maxSection = VersionUtil.sectionMaxYExclusive(chunk);
 		for (int sectionY = minSection; sectionY < maxSection; sectionY++) {
 			VertigoClientEvents.SECTION_LOADED.invoker().onSectionLoaded(chunk.getPos().x, sectionY, chunk.getPos().z);
 		}
@@ -74,8 +74,8 @@ public class ChunkTrackingManager extends TrackingManager {
 	@Environment(EnvType.CLIENT)
 	public void onChunkUnloadedClient(WorldChunk chunk) {
 		this.loadedChunks.remove(chunk.getPos().toLong());
-		int minSection = chunk.getBottomY() >> 4;
-		int maxSection = minSection + (chunk.getHeight() >> 4);
+		int minSection = VersionUtil.sectionMinYInclusive(chunk);
+		int maxSection = VersionUtil.sectionMaxYExclusive(chunk);
 		for (int sectionY = minSection; sectionY < maxSection; sectionY++) {
 			VertigoClientEvents.SECTION_UNLOADED.invoker().onSectionUnloaded(chunk.getPos().x, sectionY, chunk.getPos().z);
 		}

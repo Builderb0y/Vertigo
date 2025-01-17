@@ -20,6 +20,7 @@ import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.light.ChunkLightingView;
 
+import builderb0y.vertigo.VersionUtil;
 import builderb0y.vertigo.Vertigo;
 
 #if MC_VERSION >= MC_1_20_5
@@ -160,7 +161,7 @@ implements VertigoS2CPacket {
 				lighting.checkBlock(
 					mutablePos.set(
 						chunk.getPos().getStartX() | (unpackIndex(pos) & 15),
-						unpackRelativeY(pos) + chunk.getBottomY(),
+						unpackRelativeY(pos) + VersionUtil.blockMinYInclusive(chunk),
 						chunk.getPos().getStartZ() | ((unpackIndex(pos) >>> 4) & 15)
 					)
 				);

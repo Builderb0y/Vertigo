@@ -77,8 +77,8 @@ public class SectionTrackingManager extends TrackingManager {
 					VertigoServerEvents.SECTION_UNLOADED.invoker().onSectionUnloaded(player, chunkX, bound.maxY, chunkZ);
 					ChunkSectionUnloadPacket.send(player, chunkX, bound.maxY, chunkZ);
 				}
-				bound.minY = playerCenterY - range;
-				bound.maxY = playerCenterY + range;
+				bound.minY = Math.max(playerCenterY - range, VersionUtil.sectionMinYInclusive(chunk));
+				bound.maxY = Math.min(playerCenterY + range, VersionUtil.sectionMaxYInclusive(chunk));
 				for (int sectionY = bound.minY; sectionY <= bound.maxY; sectionY++) {
 					ChunkSectionLoadPacket.send(player, chunk, sectionY);
 					VertigoServerEvents.SECTION_LOADED.invoker().onSectionLoaded(player, chunkX, bound.maxY, chunkZ);
@@ -86,13 +86,13 @@ public class SectionTrackingManager extends TrackingManager {
 				changed = true;
 			}
 			else {
-				while (bound.maxY < Math.min(playerCenterY + range, chunk.getTopSectionCoord())) {
+				while (bound.maxY < Math.min(playerCenterY + range, VersionUtil.sectionMinYInclusive(chunk))) {
 					bound.maxY++;
 					ChunkSectionLoadPacket.send(player, chunk, bound.maxY);
 					VertigoServerEvents.SECTION_LOADED.invoker().onSectionLoaded(player, chunkX, bound.maxY, chunkZ);
 					changed = true;
 				}
-				while (bound.minY > Math.max(playerCenterY - range, chunk.getBottomSectionCoord())) {
+				while (bound.minY > Math.max(playerCenterY - range, VersionUtil.sectionMinYInclusive(chunk))) {
 					bound.minY--;
 					ChunkSectionLoadPacket.send(player, chunk, bound.minY);
 					changed = true;
@@ -152,8 +152,8 @@ public class SectionTrackingManager extends TrackingManager {
 	public void onChunkLoaded(ServerPlayerEntity player, int chunkX, int chunkZ) {
 		ChunkState bound = this.chunkBounds.computeIfAbsent(ChunkPos.toLong(chunkX, chunkZ), (long packedPos) -> new ChunkState());
 		int playerCenterY = player.getBlockY() >> 4;
-		bound.minY = Math.max(playerCenterY - VersionUtil.getViewDistance(player), player.getWorld().getBottomSectionCoord());
-		bound.maxY = Math.min(playerCenterY + VersionUtil.getViewDistance(player), player.getWorld().getTopSectionCoord());
+		bound.minY = Math.max(playerCenterY - VersionUtil.getViewDistance(player), VersionUtil.sectionMinYInclusive(player.getWorld()));
+		bound.maxY = Math.min(playerCenterY + VersionUtil.getViewDistance(player), VersionUtil.sectionMaxYInclusive(player.getWorld()));
 		LoadRangePacket.send(player, chunkX, chunkZ, bound.minY, bound.maxY);
 		for (int sectionY = bound.minY; sectionY <= bound.maxY; sectionY++) {
 			VertigoServerEvents.SECTION_LOADED.invoker().onSectionLoaded(player, chunkX, sectionY, chunkZ);
