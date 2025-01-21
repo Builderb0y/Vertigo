@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.mojang.datafixers.util.Either;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
@@ -32,6 +33,7 @@ import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.WorldChunk.CreationType;
 
+import builderb0y.vertigo.VersionUtil;
 import builderb0y.vertigo.Vertigo;
 import builderb0y.vertigo.api.VertigoClientEvents;
 
@@ -53,7 +55,11 @@ public record ChunkSectionLoadPacket(
 	int sectionX,
 	int sectionY,
 	int sectionZ,
-	byte[] sectionData,
+	//chunk sections are serialized on the server thread,
+	//and deserialized on the client network thread.
+	//as such, this either will contain a byte[] when the server creates the packet,
+	//and a chunk section when the client network thread creates it.
+	Either<byte[], ChunkSection> sectionData,
 	Optional<byte[]> skylightData,
 	List<BlockEntityData> blockEntities
 )
@@ -65,12 +71,33 @@ implements VertigoS2CPacket {
 
 		public static final PacketCodec<RegistryByteBuf, ChunkSectionLoadPacket> PACKET_CODEC = (
 			PacketCodec.tuple(
-				PacketCodecs.INTEGER,                                              ChunkSectionLoadPacket::sectionX,
-				PacketCodecs.INTEGER,                                              ChunkSectionLoadPacket::sectionY,
-				PacketCodecs.INTEGER,                                              ChunkSectionLoadPacket::sectionZ,
-				PacketCodecs.BYTE_ARRAY,                                           ChunkSectionLoadPacket::sectionData,
-				PacketCodecs.optional(VertigoNetworking.fixedSizeByteArray(2048)), ChunkSectionLoadPacket::skylightData,
-				BlockEntityData.PACKET_CODEC.collect(PacketCodecs.toList(4096)),   ChunkSectionLoadPacket::blockEntities,
+				PacketCodecs.INTEGER,
+				ChunkSectionLoadPacket::sectionX,
+
+				PacketCodecs.INTEGER,
+				ChunkSectionLoadPacket::sectionY,
+
+				PacketCodecs.INTEGER,
+				ChunkSectionLoadPacket::sectionZ,
+
+				PacketCodec.of(
+					(Either<byte[], ChunkSection> either, RegistryByteBuf buffer) -> {
+						buffer.writeBytes(either.left().orElseThrow());
+					},
+					(RegistryByteBuf buffer) -> {
+						ChunkSection section = VersionUtil.newEmptyChunkSection(buffer.getRegistryManager());
+						section.readDataPacket(buffer);
+						return Either.right(section);
+					}
+				),
+				ChunkSectionLoadPacket::sectionData,
+
+				PacketCodecs.optional(VertigoNetworking.fixedSizeByteArray(2048)),
+				ChunkSectionLoadPacket::skylightData,
+
+				BlockEntityData.PACKET_CODEC.collect(PacketCodecs.toList(4096)),
+				ChunkSectionLoadPacket::blockEntities,
+
 				ChunkSectionLoadPacket::new
 			)
 		);
@@ -89,7 +116,8 @@ implements VertigoS2CPacket {
 			int sectionX = buffer.readInt();
 			int sectionY = buffer.readInt();
 			int sectionZ = buffer.readInt();
-			byte[] sectionData = buffer.readByteArray();
+			ChunkSection section = VersionUtil.newEmptyChunkSection(MinecraftClient.getInstance().world.getRegistryManager());
+			section.readDataPacket(buffer);
 			Optional<byte[]> skylightData;
 			if (buffer.readBoolean()) {
 				skylightData = Optional.of(new byte[2048]);
@@ -103,7 +131,7 @@ implements VertigoS2CPacket {
 			for (int index = 0; index < blockEntityCount; index++) {
 				blockEntities.add(BlockEntityData.read(buffer));
 			}
-			return new ChunkSectionLoadPacket(sectionX, sectionY, sectionZ, sectionData, skylightData, blockEntities);
+			return new ChunkSectionLoadPacket(sectionX, sectionY, sectionZ, Either.right(section), skylightData, blockEntities);
 		}
 
 		@Override
@@ -113,7 +141,7 @@ implements VertigoS2CPacket {
 			.writeInt(this.sectionY)
 			.writeInt(this.sectionZ);
 			buffer
-			.writeByteArray(this.sectionData)
+			.writeBytes(this.sectionData.left().orElseThrow())
 			.writeBoolean(this.skylightData.isPresent());
 			if (this.skylightData.isPresent()) buffer.writeBytes(this.skylightData.get());
 			buffer.writeVarInt(this.blockEntities.size());
@@ -133,11 +161,17 @@ implements VertigoS2CPacket {
 		int sectionX = chunk.getPos().x;
 		int sectionZ = chunk.getPos().z;
 		ChunkSection section = chunk.getSection(chunk.sectionCoordToIndex(sectionY));
+		//section.getPacketSize() returns the wrong value. do not trust it.
+		/*
 		int bytes = section.getPacketSize();
 		byte[] sectionData = new byte[bytes];
-		ByteBuf buffer = Unpooled.wrappedBuffer(sectionData);
-		buffer.writerIndex(0);
+		*/
+		ByteBuf buffer = Unpooled.buffer();
 		section.toPacket(new PacketByteBuf(buffer));
+		byte[] sectionData = new byte[buffer.writerIndex()];
+		buffer.readBytes(sectionData);
+		if (buffer.isReadable()) throw new IllegalStateException("readable: " + buffer.readableBytes());
+
 		List<BlockEntityData> blockEntities = (
 			chunk
 			.getBlockEntities()
@@ -149,7 +183,7 @@ implements VertigoS2CPacket {
 		);
 		ChunkNibbleArray skylight = chunk.getWorld().getLightingProvider().get(LightType.SKY).getLightSection(ChunkSectionPos.from(sectionX, sectionY, sectionZ));
 		Optional<byte[]> skylightData = skylight != null ? Optional.of(skylight.asByteArray().clone()) : Optional.empty();
-		ServerPlayNetworking.send(player, new ChunkSectionLoadPacket(sectionX, sectionY, sectionZ, sectionData, skylightData, blockEntities));
+		ServerPlayNetworking.send(player, new ChunkSectionLoadPacket(sectionX, sectionY, sectionZ, Either.left(sectionData), skylightData, blockEntities));
 	}
 
 	@Override
@@ -159,8 +193,7 @@ implements VertigoS2CPacket {
 		if (world == null) return;
 		WorldChunk chunk = (WorldChunk)(world.getChunk(this.sectionX, this.sectionZ, ChunkStatus.FULL, false));
 		if (chunk == null) return;
-		ChunkSection section = chunk.getSection(chunk.sectionCoordToIndex(this.sectionY));
-		section.readDataPacket(new PacketByteBuf(Unpooled.wrappedBuffer(this.sectionData)));
+		chunk.getSectionArray()[chunk.sectionCoordToIndex(this.sectionY)] = this.sectionData.right().orElseThrow();
 		for (BlockEntityData blockEntityData : this.blockEntities) {
 			int x = chunk.getPos().getStartX() | (blockEntityData.packedXZ & 15);
 			int y = blockEntityData.y;
@@ -189,7 +222,7 @@ implements VertigoS2CPacket {
 				sectionPos,
 				new ChunkNibbleArray(this.skylightData.get().clone())
 			);
-			world.getLightingProvider().setSectionStatus(sectionPos, section.isEmpty());
+			world.getLightingProvider().setSectionStatus(sectionPos, this.sectionData.right().orElseThrow().isEmpty());
 		}
 		world.scheduleBlockRenders(this.sectionX, this.sectionY, this.sectionZ);
 		VertigoClientEvents.SECTION_LOADED.invoker().onSectionLoaded(this.sectionX, this.sectionY, this.sectionZ);
