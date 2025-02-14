@@ -45,8 +45,8 @@ dependencies() {
 
 	modImplementation("net.fabricmc.fabric-api:fabric-api:${ project.fabric_version }")
 
-	annotationProcessor('systems.manifold:manifold-preprocessor:2024.1.49')
-	testAnnotationProcessor('systems.manifold:manifold-preprocessor:2024.1.49')
+	annotationProcessor('systems.manifold:manifold-preprocessor:2024.1.54')
+	testAnnotationProcessor('systems.manifold:manifold-preprocessor:2024.1.54')
 
 	modRuntimeOnly(fileTree(file("dependencies/${ project.minecraft_version }/runtimeOnly")))
 

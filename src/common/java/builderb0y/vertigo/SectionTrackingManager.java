@@ -60,7 +60,7 @@ public class SectionTrackingManager extends TrackingManager {
 	public void doUpdate(ServerPlayerEntity player) {
 		int playerCenterY = player.getBlockY() >> 4;
 		int range = VersionUtil.getViewDistance(player);
-		for (Iterator<Long2ObjectMap.Entry<ChunkState>> iterator = this.chunkBounds.long2ObjectEntrySet().iterator(); iterator.hasNext(); ) {
+		for (Iterator<Long2ObjectMap.Entry<ChunkState>> iterator = this.chunkBounds.long2ObjectEntrySet().iterator(); iterator.hasNext();) {
 			Long2ObjectMap.Entry<ChunkState> entry = iterator.next();
 			int chunkX = ChunkPos.getPackedX(entry.getLongKey());
 			int chunkZ = ChunkPos.getPackedZ(entry.getLongKey());
@@ -86,7 +86,7 @@ public class SectionTrackingManager extends TrackingManager {
 				changed = true;
 			}
 			else {
-				while (bound.maxY < Math.min(playerCenterY + range, VersionUtil.sectionMinYInclusive(chunk))) {
+				while (bound.maxY < Math.min(playerCenterY + range, VersionUtil.sectionMaxYInclusive(chunk))) {
 					bound.maxY++;
 					ChunkSectionLoadPacket.send(player, chunk, bound.maxY);
 					VertigoServerEvents.SECTION_LOADED.invoker().onSectionLoaded(player, chunkX, bound.maxY, chunkZ);
@@ -95,8 +95,8 @@ public class SectionTrackingManager extends TrackingManager {
 				while (bound.minY > Math.max(playerCenterY - range, VersionUtil.sectionMinYInclusive(chunk))) {
 					bound.minY--;
 					ChunkSectionLoadPacket.send(player, chunk, bound.minY);
+					VertigoServerEvents.SECTION_LOADED.invoker().onSectionLoaded(player, chunkX, bound.minY, chunkZ);
 					changed = true;
-					VertigoServerEvents.SECTION_LOADED.invoker().onSectionLoaded(player, chunkX, bound.maxY, chunkZ);
 				}
 				while (bound.maxY > playerCenterY + range + 1) {
 					VertigoServerEvents.SECTION_UNLOADED.invoker().onSectionUnloaded(player, chunkX, bound.maxY, chunkZ);
@@ -105,7 +105,7 @@ public class SectionTrackingManager extends TrackingManager {
 					changed = true;
 				}
 				while (bound.minY < playerCenterY - range - 1) {
-					VertigoServerEvents.SECTION_UNLOADED.invoker().onSectionUnloaded(player, chunkX, bound.maxY, chunkZ);
+					VertigoServerEvents.SECTION_UNLOADED.invoker().onSectionUnloaded(player, chunkX, bound.minY, chunkZ);
 					ChunkSectionUnloadPacket.send(player, chunkX, bound.minY, chunkZ);
 					bound.minY++;
 					changed = true;
@@ -113,16 +113,6 @@ public class SectionTrackingManager extends TrackingManager {
 			}
 			if (changed) {
 				LoadRangePacket.send(player, chunk.getPos().x, chunk.getPos().z, bound.minY, bound.maxY);
-				/*
-				player.networkHandler.sendPacket(
-					new LightUpdateS2CPacket(
-						chunk.getPos(),
-						player.getServerWorld().getLightingProvider(),
-						null,
-						null
-					)
-				);
-				*/
 			}
 		}
 	}
