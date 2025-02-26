@@ -7,10 +7,3 @@ I think I only have a "vertigo installed" packet registered in one direction and
 mod compatibility:
 
 changelog:
-	* Fixed compatibility with ScalableLux, Valkyrien Skies, and AntiXray.
-	* Marked 1.21.3 version as also being compatible with 1.21.2 (un-tested, use at your own risk).
-	* Ditto for 1.20.6 -> 1.20.5 and 1.20.4 -> 1.20.3.
-	For mod developers:
-	* Added a new API method to query whether a player is tracking sections or chunks.
-		* In singleplayer, this always returns true.
-		* In multiplayer, this only returns true if the other side has a version of Vertigo installed which has a compatible packet protocol.
