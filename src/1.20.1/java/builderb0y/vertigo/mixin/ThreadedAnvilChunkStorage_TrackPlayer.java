@@ -1,7 +1,5 @@
 package builderb0y.vertigo.mixin;
 
-import java.util.BitSet;
-
 import com.llamalad7.mixinextras.sugar.Local;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.spongepowered.asm.mixin.Final;
@@ -20,7 +18,6 @@ import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import net.minecraft.util.Unit;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.WorldChunk;
-import net.minecraft.world.chunk.light.LightingProvider;
 
 import builderb0y.vertigo.TrackingManager;
 import builderb0y.vertigo.Vertigo;

@@ -36,7 +36,7 @@ public class VertigoAPI {
 	if this method is called on the logical client with a different player
 	(for example, another player in multiplayer), then this method returns false.
 
-	this method is not thread-safe, and should ONLY be called from the render thread or the server thread.
+	this method is NOT thread-safe, and should ONLY be called from the render thread or the server thread.
 	*/
 	public static boolean isSectionLoaded(PlayerEntity player, int sectionX, int sectionY, int sectionZ) {
 		if (player.getWorld().isClient) {
@@ -94,5 +94,48 @@ public class VertigoAPI {
 
 	public static Stream<ServerPlayerEntity> getPlayersTrackingBlock(ServerWorld world, BlockPos pos) {
 		return getPlayersTrackingBlock(world, pos.getX(), pos.getY(), pos.getZ());
+	}
+
+	/**
+	returns true if the provided player is tracking individual sections,
+	and false if the player is tracking entire chunks.
+
+	for the player to be tracking individual sections,
+	vertigo must be installed on both the client and the server,
+	and have versions with matching network protocols.
+	since this is not a guarantee in multiplayer,
+	this method can be used to query whether both sides
+	agree to track sections instead of chunks.
+
+	if this method is called on the logical client with the main client player entity,
+	then this method returns true if the server has a compatible version of vertigo installed.
+
+	if this method is called on the logical client with a different player
+	(for example, another player in multiplayer), then this method returns false.
+
+	if this method is called on the logical server with a server player entity,
+	then this method returns true if the client controlling
+	the player has a compatible version of vertigo installed.
+
+	this method is NOT thread-safe, and should ONLY be called from the render thread or the server thread.
+	*/
+	public static boolean isTrackingSections(PlayerEntity player) {
+		if (player.getWorld().isClient) {
+			return isTrackingSectionsClient(player);
+		}
+		else {
+			TrackingManager trackingManager = TrackingManager.PLAYERS.get(player);
+			return trackingManager != null && trackingManager.otherSideHasVertigoInstalled();
+		}
+	}
+
+	@Environment(EnvType.CLIENT)
+	private static boolean isTrackingSectionsClient(PlayerEntity player) {
+		if (player == MinecraftClient.getInstance().player) {
+			return TrackingManager.CLIENT.otherSideHasVertigoInstalled();
+		}
+		else {
+			return false;
+		}
 	}
 }

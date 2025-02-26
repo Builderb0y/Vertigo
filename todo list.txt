@@ -1,15 +1,16 @@
 find more vanilla packets being sent when they shouldn't be.
 
-additional API hook to query if a player is tracking sections or chunks.
-mark some versions as compatible with other MC versions.
-	1.21.3 should also be compatible with 1.21.2, for example.
 I think I only have a "vertigo installed" packet registered in one direction and not the other.
 	register it in both directions.
+	do this next time I need a packet protocol change.
 
 mod compatibility:
-	valkyrien skies: need to force shipyard chunks to be synced fully.
-		they should be mostly empty though, so hopefully this is ok.
 
 changelog:
-	* Fixed compatibility with ScalableLux.
-	* Fixed compatibility with AntiXray.
+	* Fixed compatibility with ScalableLux, Valkyrien Skies, and AntiXray.
+	* Marked 1.21.3 version as also being compatible with 1.21.2 (un-tested, use at your own risk).
+	* Ditto for 1.20.6 -> 1.20.5 and 1.20.4 -> 1.20.3.
+	For mod developers:
+	* Added a new API method to query whether a player is tracking sections or chunks.
+		* In singleplayer, this always returns true.
+		* In multiplayer, this only returns true if the other side has a version of Vertigo installed which has a compatible packet protocol.

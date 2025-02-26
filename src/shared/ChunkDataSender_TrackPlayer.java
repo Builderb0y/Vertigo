@@ -15,7 +15,6 @@ import net.minecraft.world.chunk.WorldChunk;
 
 import builderb0y.vertigo.TrackingManager;
 import builderb0y.vertigo.Vertigo;
-import builderb0y.vertigo.SectionTrackingManager;
 
 @Mixin(ChunkDataSender.class)
 public class ChunkDataSender_TrackPlayer {

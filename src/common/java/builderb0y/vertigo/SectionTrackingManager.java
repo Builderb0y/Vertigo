@@ -19,7 +19,7 @@ import net.minecraft.world.chunk.WorldChunk;
 
 import builderb0y.vertigo.api.VertigoClientEvents;
 import builderb0y.vertigo.api.VertigoServerEvents;
-import builderb0y.vertigo.compat.ScalableLuxCompat;
+import builderb0y.vertigo.compat.ValkyrienSkiesCompat;
 import builderb0y.vertigo.networking.ChunkSectionLoadPacket;
 import builderb0y.vertigo.networking.ChunkSectionUnloadPacket;
 import builderb0y.vertigo.networking.LoadRangePacket;
@@ -71,6 +71,9 @@ public class SectionTrackingManager extends TrackingManager {
 			Long2ObjectMap.Entry<ChunkState> entry = iterator.next();
 			int chunkX = ChunkPos.getPackedX(entry.getLongKey());
 			int chunkZ = ChunkPos.getPackedZ(entry.getLongKey());
+			if (ValkyrienSkiesCompat.isInShipyard(chunkX, chunkZ)) {
+				continue;
+			}
 			WorldChunk chunk = (WorldChunk)(player.getServerWorld().getChunk(chunkX, chunkZ, ChunkStatus.FULL, false));
 			if (chunk == null) { //???
 				iterator.remove();
@@ -130,6 +133,9 @@ public class SectionTrackingManager extends TrackingManager {
 			iterator.hasNext();
 		) {
 			long chunkPos = iterator.nextLong();
+			if (ValkyrienSkiesCompat.isInShipyard(ChunkPos.getPackedX(chunkPos), ChunkPos.getPackedZ(chunkPos))) {
+				continue;
+			}
 			ChunkState info = this.chunkBounds.get(chunkPos);
 			if (info != null) {
 				int chunkX = ChunkPos.getPackedX(chunkPos);
@@ -148,13 +154,20 @@ public class SectionTrackingManager extends TrackingManager {
 	@Override
 	public void onChunkLoaded(ServerPlayerEntity player, int chunkX, int chunkZ) {
 		ChunkState bound = this.chunkBounds.computeIfAbsent(ChunkPos.toLong(chunkX, chunkZ), (long packedPos) -> new ChunkState());
-		int playerCenterY = player.getBlockY() >> 4;
-		bound.minY = Math.max(playerCenterY - VersionUtil.getViewDistance(player), VersionUtil.sectionMinYInclusive(player.getWorld()));
-		bound.maxY = Math.min(playerCenterY + VersionUtil.getViewDistance(player), VersionUtil.sectionMaxYInclusive(player.getWorld()));
-		LoadRangePacket.send(player, chunkX, chunkZ, bound.minY, bound.maxY);
-		BitSet everywhere = new BitSet(256);
-		everywhere.set(0, 256);
-		SkylightUpdatePacket.send(player, chunkX, chunkZ, everywhere);
+		if (ValkyrienSkiesCompat.isInShipyard(chunkX, chunkZ)) {
+			bound.minY = VersionUtil.sectionMinYInclusive(player.getWorld());
+			bound.maxY = VersionUtil.sectionMaxYInclusive(player.getWorld());
+			LoadRangePacket.send(player, chunkX, chunkZ, bound.minY, bound.maxY);
+		}
+		else {
+			int playerCenterY = player.getBlockY() >> 4;
+			bound.minY = Math.max(playerCenterY - VersionUtil.getViewDistance(player), VersionUtil.sectionMinYInclusive(player.getWorld()));
+			bound.maxY = Math.min(playerCenterY + VersionUtil.getViewDistance(player), VersionUtil.sectionMaxYInclusive(player.getWorld()));
+			LoadRangePacket.send(player, chunkX, chunkZ, bound.minY, bound.maxY);
+			BitSet everywhere = new BitSet(256);
+			everywhere.set(0, 256);
+			SkylightUpdatePacket.send(player, chunkX, chunkZ, everywhere);
+		}
 		for (int sectionY = bound.minY; sectionY <= bound.maxY; sectionY++) {
 			VertigoServerEvents.SECTION_LOADED.invoker().onSectionLoaded(player, chunkX, sectionY, chunkZ);
 		}
