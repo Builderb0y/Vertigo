@@ -7,9 +7,9 @@ I think I only have a "vertigo installed" packet registered in one direction and
 	register it in both directions.
 
 mod compatibility:
-	anti xray: all empty sections I construct should be a subclass of ChunkSection.
 	valkyrien skies: need to force shipyard chunks to be synced fully.
 		they should be mostly empty though, so hopefully this is ok.
 
 changelog:
 	* Fixed compatibility with ScalableLux.
+	* Fixed compatibility with AntiXray.

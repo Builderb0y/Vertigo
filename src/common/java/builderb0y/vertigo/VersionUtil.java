@@ -17,10 +17,11 @@ public class VersionUtil {
 	}
 
 	public static ChunkSection newEmptyChunkSection(DynamicRegistryManager registries) {
+		//using an anonymous subclass fixes compatibility with the AntiXray mod.
 		#if MC_VERSION >= MC_1_21_2
-			return new ChunkSection(registries.getOrThrow(RegistryKeys.BIOME));
+			return new ChunkSection(registries.getOrThrow(RegistryKeys.BIOME)) {};
 		#else
-			return new ChunkSection(registries.get(RegistryKeys.BIOME));
+			return new ChunkSection(registries.get(RegistryKeys.BIOME)) {};
 		#endif
 	}
 
