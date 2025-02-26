@@ -22,7 +22,7 @@ public class ScalableLux_ChunkAccessMixin_Undoing {
 		method = "@MixinSquared:Handler",
 		at = @At(
 			value = "FIELD",
-			target = "chunkSkyLight",
+			target = "Lnet/minecraft/world/chunk/Chunk;chunkSkyLight:Lnet/minecraft/world/chunk/light/ChunkSkyLight;",
 			opcode = Opcodes.PUTFIELD
 		)
 	)
