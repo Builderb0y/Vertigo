@@ -31,9 +31,12 @@ repositories() {
 	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
 	// for more information about repositories.
 
-	//manifold
 	maven() {
-		url('https://oss.sonatype.org/content/repositories/snapshots/')
+		url('https://oss.sonatype.org/content/repositories/snapshots/') //manifold.
+	}
+
+	maven() {
+		url('https://maven.bawnorton.com/releases') //mixin squared.
 	}
 }
 
@@ -47,8 +50,11 @@ dependencies() {
 
 	annotationProcessor('systems.manifold:manifold-preprocessor:2024.1.54')
 	testAnnotationProcessor('systems.manifold:manifold-preprocessor:2024.1.54')
+	include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:0.2.0")))
 
+	modCompileOnly(fileTree(file("dependencies/${ project.minecraft_version }/compileOnly")))
 	modRuntimeOnly(fileTree(file("dependencies/${ project.minecraft_version }/runtimeOnly")))
+	modImplementation(fileTree(file("dependencies/${ project.minecraft_version }/implementation")))
 
 	testImplementation('org.junit.jupiter:junit-jupiter-api:5.3.0-M1')
 	testImplementation('org.junit.jupiter:junit-jupiter-engine:5.3.0-M1')

@@ -8,6 +8,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -68,6 +69,14 @@ public abstract class TrackingManager {
 	}
 
 	public abstract boolean isLoaded(int sectionX, int sectionY, int sectionZ);
+
+	public abstract @Nullable LoadedRange getLoadedRange(int chunkX, int chunkZ);
+
+	@FunctionalInterface
+	public static interface LoadedRange {
+
+		public abstract boolean isLoaded(int sectionY);
+	}
 
 	public abstract void update(ServerPlayerEntity player);
 

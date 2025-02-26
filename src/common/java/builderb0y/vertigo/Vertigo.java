@@ -3,6 +3,8 @@ package builderb0y.vertigo;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 
 import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
@@ -24,6 +26,8 @@ public class Vertigo implements ModInitializer {
 	public static final boolean
 		AUDIT        = false,
 		PRINT_EVENTS = false;
+
+	public static final Logger LOGGER = LoggerFactory.getLogger(MODNAME);
 
 	/** used by some mixins to keep track of which player a packet is being synced to. */
 	public static final ThreadLocal<ServerPlayerEntity> SYNCING_PLAYER = new ThreadLocal<>();

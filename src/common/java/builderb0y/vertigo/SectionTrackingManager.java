@@ -9,6 +9,7 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
@@ -18,6 +19,7 @@ import net.minecraft.world.chunk.WorldChunk;
 
 import builderb0y.vertigo.api.VertigoClientEvents;
 import builderb0y.vertigo.api.VertigoServerEvents;
+import builderb0y.vertigo.compat.ScalableLuxCompat;
 import builderb0y.vertigo.networking.ChunkSectionLoadPacket;
 import builderb0y.vertigo.networking.ChunkSectionUnloadPacket;
 import builderb0y.vertigo.networking.LoadRangePacket;
@@ -41,7 +43,12 @@ public class SectionTrackingManager extends TrackingManager {
 	@Override
 	public boolean isLoaded(int sectionX, int sectionY, int sectionZ) {
 		ChunkState bound = this.chunkBounds.get(ChunkPos.toLong(sectionX, sectionZ));
-		return bound != null && bound.contains(sectionY);
+		return bound != null && bound.isLoaded(sectionY);
+	}
+
+	@Override
+	public @Nullable LoadedRange getLoadedRange(int chunkX, int chunkZ) {
+		return this.chunkBounds.get(ChunkPos.toLong(chunkX, chunkZ));
 	}
 
 	@Override
@@ -145,6 +152,9 @@ public class SectionTrackingManager extends TrackingManager {
 		bound.minY = Math.max(playerCenterY - VersionUtil.getViewDistance(player), VersionUtil.sectionMinYInclusive(player.getWorld()));
 		bound.maxY = Math.min(playerCenterY + VersionUtil.getViewDistance(player), VersionUtil.sectionMaxYInclusive(player.getWorld()));
 		LoadRangePacket.send(player, chunkX, chunkZ, bound.minY, bound.maxY);
+		BitSet everywhere = new BitSet(256);
+		everywhere.set(0, 256);
+		SkylightUpdatePacket.send(player, chunkX, chunkZ, everywhere);
 		for (int sectionY = bound.minY; sectionY <= bound.maxY; sectionY++) {
 			VertigoServerEvents.SECTION_LOADED.invoker().onSectionLoaded(player, chunkX, sectionY, chunkZ);
 		}
@@ -190,14 +200,15 @@ public class SectionTrackingManager extends TrackingManager {
 	}
 
 	/** information about the chunk that a player sees. */
-	public static class ChunkState {
+	public static class ChunkState implements LoadedRange {
 
 		/** both inclusive; measured in sections, not blocks. */
 		public int minY, maxY;
 		/** indices where the skylight heightmap has changed since the previous tick. */
 		public final BitSet skylightMask = new BitSet(256);
 
-		public boolean contains(int sectionY) {
+		@Override
+		public boolean isLoaded(int sectionY) {
 			return sectionY >= this.minY && sectionY <= this.maxY;
 		}
 	}

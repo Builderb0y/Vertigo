@@ -8,9 +8,9 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
+import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.PaletteStorage;
@@ -19,9 +19,13 @@ import net.minecraft.world.LightType;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.light.ChunkLightingView;
+import net.minecraft.world.chunk.light.ChunkSkyLight;
 
-import builderb0y.vertigo.VersionUtil;
+import builderb0y.vertigo.TrackingManager;
+import builderb0y.vertigo.TrackingManager.LoadedRange;
 import builderb0y.vertigo.Vertigo;
+import builderb0y.vertigo.mixin.ChunkSkyLight_Accessors;
+import builderb0y.vertigo.compat.ScalableLuxCompat;
 
 #if MC_VERSION >= MC_1_20_5
 	import net.minecraft.network.codec.PacketCodec;
@@ -136,7 +140,7 @@ implements VertigoS2CPacket {
 	public static void send(ServerPlayerEntity player, int chunkX, int chunkZ, BitSet mask) {
 		WorldChunk chunk = (WorldChunk)(player.getServerWorld().getChunk(chunkX, chunkZ, ChunkStatus.FULL, false));
 		if (chunk == null) return;
-		PaletteStorage palette = chunk.getChunkSkyLight().palette;
+		PaletteStorage palette = ((ChunkSkyLight_Accessors)(chunk.getChunkSkyLight())).vertigo_getPalette();
 		IntArrayList queuedPositions = new IntArrayList(mask.cardinality());
 		for (int index = -1; (index = mask.nextSetBit(index + 1)) >= 0;) {
 			queuedPositions.add(packSkylightPos(index, palette.get(index)));
@@ -151,21 +155,41 @@ implements VertigoS2CPacket {
 		if (world == null) return;
 		WorldChunk chunk = (WorldChunk)(world.getChunk(this.chunkX, this.chunkZ, ChunkStatus.FULL, false));
 		if (chunk == null) return;
-		world.enqueueChunkUpdate(() -> {
-			PaletteStorage palette = chunk.getChunkSkyLight().palette;
-			ChunkLightingView lighting = world.getLightingProvider().get(LightType.SKY);
-			BlockPos.Mutable mutablePos = new BlockPos.Mutable();
-			for (int index = 0, size = this.skyPositions.size(); index < size; index++) {
-				int pos = this.skyPositions.getInt(index);
-				palette.set(unpackIndex(pos), unpackRelativeY(pos));
-				lighting.checkBlock(
-					mutablePos.set(
-						chunk.getPos().getStartX() | (unpackIndex(pos) & 15),
-						unpackRelativeY(pos) + VersionUtil.blockMinYInclusive(chunk),
-						chunk.getPos().getStartZ() | ((unpackIndex(pos) >>> 4) & 15)
-					)
-				);
+		LoadedRange range = TrackingManager.CLIENT.getLoadedRange(this.chunkX, this.chunkZ);
+		if (range == null) return;
+		ChunkSkyLight skylight = chunk.getChunkSkyLight();
+		ChunkSkyLight_Accessors accessors = (ChunkSkyLight_Accessors)(skylight);
+		ChunkLightingView lighting = world.getLightingProvider().get(LightType.SKY);
+		BlockPos.Mutable mutablePos = new BlockPos.Mutable();
+		int chunkMinY = accessors.vertigo_getMinY();
+		for (int index = 0, size = this.skyPositions.size(); index < size; index++) {
+			int pos = this.skyPositions.getInt(index);
+			int localIndex = unpackIndex(pos);
+			int newRelativeY = unpackRelativeY(pos);
+			int oldRelativeY = accessors.vertigo_getPalette().swap(localIndex, newRelativeY);
+			int x = chunk.getPos().getStartX() | (localIndex & 15);
+			int z = chunk.getPos().getStartZ() | (localIndex >>> 4);
+			if (ScalableLuxCompat.scalableLuxInstalled) {
+				if (oldRelativeY != newRelativeY) {
+					oldRelativeY--;
+					newRelativeY--;
+					if (!range.isLoaded((oldRelativeY + chunkMinY) >> 4)) {
+						world.setBlockState(
+							mutablePos.set(x, oldRelativeY + chunkMinY, z),
+							Blocks.AIR.getDefaultState()
+						);
+					}
+					if (!range.isLoaded((newRelativeY + chunkMinY) >> 4)) {
+						world.setBlockState(
+							mutablePos.set(x, newRelativeY + chunkMinY, z),
+							Blocks.STONE.getDefaultState()
+						);
+					}
+				}
 			}
-		});
+			else {
+				lighting.checkBlock(mutablePos.set(x, newRelativeY + chunkMinY, z));
+			}
+		}
 	}
 }

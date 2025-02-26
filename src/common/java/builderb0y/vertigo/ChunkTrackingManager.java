@@ -3,6 +3,7 @@ package builderb0y.vertigo;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
@@ -27,6 +28,12 @@ public class ChunkTrackingManager extends TrackingManager {
 	@Override
 	public boolean isLoaded(int sectionX, int sectionY, int sectionZ) {
 		return this.loadedChunks.contains(ChunkPos.toLong(sectionX, sectionZ));
+	}
+
+	@Override
+	public @Nullable LoadedRange getLoadedRange(int chunkX, int chunkZ) {
+		boolean loaded = this.loadedChunks.contains(ChunkPos.toLong(chunkX, chunkZ));
+		return loaded ? (int sectionY) -> true : null;
 	}
 
 	@Override

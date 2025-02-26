@@ -1,1 +1,15 @@
 find more vanilla packets being sent when they shouldn't be.
+
+additional API hook to query if a player is tracking sections or chunks.
+mark some versions as compatible with other MC versions.
+	1.21.3 should also be compatible with 1.21.2, for example.
+I think I only have a "vertigo installed" packet registered in one direction and not the other.
+	register it in both directions.
+
+mod compatibility:
+	anti xray: all empty sections I construct should be a subclass of ChunkSection.
+	valkyrien skies: need to force shipyard chunks to be synced fully.
+		they should be mostly empty though, so hopefully this is ok.
+
+changelog:
+	* Fixed compatibility with ScalableLux.
