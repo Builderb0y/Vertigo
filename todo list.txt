@@ -7,3 +7,5 @@ I think I only have a "vertigo installed" packet registered in one direction and
 mod compatibility:
 
 changelog:
+	* Fixed crash that could happen when changing dimensions in very specific ways.
+	* Marked 1.20.1 jar as also compatible with 1.20.0.

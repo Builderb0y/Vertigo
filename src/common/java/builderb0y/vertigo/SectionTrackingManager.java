@@ -41,6 +41,12 @@ public class SectionTrackingManager extends TrackingManager {
 	}
 
 	@Override
+	public void onDimensionChanged() {
+		this.chunkBounds.clear();
+		this.skylightUpdates.clear();
+	}
+
+	@Override
 	public boolean isLoaded(int sectionX, int sectionY, int sectionZ) {
 		ChunkState bound = this.chunkBounds.get(ChunkPos.toLong(sectionX, sectionZ));
 		return bound != null && bound.isLoaded(sectionY);

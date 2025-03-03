@@ -26,6 +26,11 @@ public class ChunkTrackingManager extends TrackingManager {
 	public ChunkTrackingManager(ServerPlayerEntity player) {}
 
 	@Override
+	public void onDimensionChanged() {
+		this.loadedChunks.clear();
+	}
+
+	@Override
 	public boolean isLoaded(int sectionX, int sectionY, int sectionZ) {
 		return this.loadedChunks.contains(ChunkPos.toLong(sectionX, sectionZ));
 	}

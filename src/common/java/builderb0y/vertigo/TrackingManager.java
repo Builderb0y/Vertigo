@@ -7,11 +7,13 @@ import java.util.WeakHashMap;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.WorldChunk;
 
@@ -24,6 +26,15 @@ public abstract class TrackingManager {
 	public static final WeakHashMap<ServerPlayerEntity, TrackingManager> PLAYERS = new WeakHashMap<>();
 	/** used on the logical client to refer to the current player. */
 	public static TrackingManager CLIENT;
+
+	static {
+		ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register(
+			(ServerPlayerEntity player, ServerWorld origin, ServerWorld destination) -> {
+				TrackingManager trackingManager = PLAYERS.get(player);
+				if (trackingManager != null) trackingManager.onDimensionChanged();
+			}
+		);
+	}
 
 	@Environment(EnvType.CLIENT)
 	public static TrackingManager createClient() {
@@ -93,4 +104,6 @@ public abstract class TrackingManager {
 	public abstract void onChunkUnloadedClient(WorldChunk chunk);
 
 	public abstract void onLightingChanged(BlockPos pos);
+
+	public abstract void onDimensionChanged();
 }
