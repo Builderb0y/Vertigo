@@ -7,6 +7,7 @@ import java.lang.invoke.MethodType;
 import net.minecraft.util.math.ChunkPos;
 
 import builderb0y.vertigo.Vertigo;
+import builderb0y.vertigo.VertigoInternals;
 
 public class ValkyrienSkiesCompat {
 
@@ -33,16 +34,11 @@ public class ValkyrienSkiesCompat {
 			return (boolean)(SHIPYARD.invokeExact(chunkX, chunkY));
 		}
 		catch (Throwable exception) {
-			throw rethrow(exception);
+			throw VertigoInternals.rethrow(exception);
 		}
 	}
 
 	public static boolean isInShipyard(ChunkPos pos) {
 		return isInShipyard(pos.x, pos.z);
-	}
-
-	@SuppressWarnings("unchecked")
-	public static <X extends Throwable> RuntimeException rethrow(Throwable throwable) throws X {
-		throw (X)(throwable);
 	}
 }

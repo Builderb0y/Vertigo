@@ -14,7 +14,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.WorldChunk;
 
 import builderb0y.vertigo.TrackingManager;
-import builderb0y.vertigo.Vertigo;
+import builderb0y.vertigo.VertigoInternals;
 
 @Mixin(ChunkDataSender.class)
 public class ChunkDataSender_TrackPlayer {
@@ -23,13 +23,13 @@ public class ChunkDataSender_TrackPlayer {
 	private static void vertigo_markPlayer(ServerPlayNetworkHandler handler, ServerWorld world, WorldChunk chunk, CallbackInfo callback) {
 		TrackingManager manager = TrackingManager.PLAYERS.computeIfAbsent(handler.player, TrackingManager::create);
 		if (manager.otherSideHasVertigoInstalled()) {
-			Vertigo.SYNCING_PLAYER.set(handler.player);
+			VertigoInternals.SYNCING_PLAYER.set(handler.player);
 		}
 	}
 
 	@Inject(method = "sendChunkData", at = @At("RETURN"))
 	private static void vertigo_unmarkPlayer(ServerPlayNetworkHandler handler, ServerWorld world, WorldChunk chunk, CallbackInfo callback) {
-		Vertigo.SYNCING_PLAYER.set(null);
+		VertigoInternals.SYNCING_PLAYER.set(null);
 		TrackingManager manager = TrackingManager.PLAYERS.computeIfAbsent(handler.player, TrackingManager::create);
 		manager.onChunkLoaded(handler.player, chunk.getPos().x, chunk.getPos().z);
 	}

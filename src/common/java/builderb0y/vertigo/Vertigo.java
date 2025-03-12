@@ -7,11 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 
-import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
-import net.minecraft.world.chunk.ChunkSection;
 
 import builderb0y.vertigo.api.VertigoClientEvents;
 import builderb0y.vertigo.api.VertigoServerEvents;
@@ -29,29 +26,19 @@ public class Vertigo implements ModInitializer {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(MODNAME);
 
-	/** used by some mixins to keep track of which player a packet is being synced to. */
-	public static final ThreadLocal<ServerPlayerEntity> SYNCING_PLAYER = new ThreadLocal<>();
 	/** the current running server. */
 	public static MinecraftServer SERVER;
-	/**
-	{@link ChunkDataS2CPacket} sends the entire chunk payload in one big byte[].
-	this includes every section in the chunk, which is a problem because I can't
-	just say "only send the sections in this Y range". so instead, I redirect
-	the unnecessary chunk sections to this empty section, to reduce the size
-	of the packet.
-	*/
-	public static ChunkSection EMPTY_SECTION;
 
 	@Override
 	public void onInitialize() {
 		VertigoNetworking.init();
 		ServerLifecycleEvents.SERVER_STARTED.register((MinecraftServer server) -> {
 			SERVER = server;
-			EMPTY_SECTION = VersionUtil.newEmptyChunkSection(server.getRegistryManager());
+			VertigoInternals.EMPTY_SECTION = VersionUtil.newEmptyChunkSection(server.getRegistryManager());
 		});
 		ServerLifecycleEvents.SERVER_STOPPED.register((MinecraftServer server) -> {
 			SERVER = null;
-			EMPTY_SECTION = null;
+			VertigoInternals.EMPTY_SECTION = null;
 		});
 		ServerTickEvents.END_SERVER_TICK.register(SectionTrackingManager::tickAll);
 

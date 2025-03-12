@@ -183,10 +183,10 @@ public class SectionTrackingManager extends TrackingManager {
 	public void onChunkUnloaded(ServerPlayerEntity player, int chunkX, int chunkZ) {
 		ChunkState bounds = this.chunkBounds.remove(ChunkPos.toLong(chunkX, chunkZ));
 		if (bounds != null) {
-			LoadRangePacket.sendUnload(player, chunkX, chunkZ);
 			for (int sectionY = bounds.minY; sectionY <= bounds.maxY; sectionY++) {
 				VertigoServerEvents.SECTION_UNLOADED.invoker().onSectionUnloaded(player, chunkX, sectionY, chunkZ);
 			}
+			LoadRangePacket.sendUnload(player, chunkX, chunkZ);
 		}
 	}
 

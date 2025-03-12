@@ -48,8 +48,9 @@ dependencies() {
 
 	modImplementation("net.fabricmc.fabric-api:fabric-api:${ project.fabric_version }")
 
-	annotationProcessor('systems.manifold:manifold-preprocessor:2024.1.54')
-	testAnnotationProcessor('systems.manifold:manifold-preprocessor:2024.1.54')
+	String manifoldVersion = '2025.1.1'
+	annotationProcessor("systems.manifold:manifold-preprocessor:$manifoldVersion")
+	testAnnotationProcessor("systems.manifold:manifold-preprocessor:$manifoldVersion")
 	include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:0.2.0")))
 
 	modCompileOnly(fileTree(file("dependencies/${ project.minecraft_version }/compileOnly")))
