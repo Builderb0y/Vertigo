@@ -22,7 +22,16 @@ public abstract class WorldChunk_SyncSkylight {
 	@Shadow public abstract World getWorld();
 
 	@Inject(method = "setBlockState", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/light/LightingProvider;checkBlock(Lnet/minecraft/util/math/BlockPos;)V", shift = Shift.AFTER))
-	private void vertigo_syncSkylight(BlockPos pos, BlockState state, boolean moved, CallbackInfoReturnable<BlockState> callback) {
+	private void vertigo_syncSkylight(
+		BlockPos pos,
+		BlockState state,
+		#if MC_VERSION >= MC_1_21_5
+			int flags,
+		#else
+			boolean moved,
+		#endif
+		CallbackInfoReturnable<BlockState> callback
+	) {
 		if (this.getWorld() instanceof ServerWorld serverWorld) {
 			for (ServerPlayerEntity player : serverWorld.getPlayers()) {
 				TrackingManager manager = TrackingManager.PLAYERS.get(player);

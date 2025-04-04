@@ -20,7 +20,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.WorldChunk;
 
 import builderb0y.vertigo.TrackingManager;
-import builderb0y.vertigo.Vertigo;
+import builderb0y.vertigo.VertigoInternals;
 
 @Mixin(ThreadedAnvilChunkStorage.class)
 public class ThreadedAnvilChunkStorage_TrackPlayer {
@@ -46,12 +46,12 @@ public class ThreadedAnvilChunkStorage_TrackPlayer {
 
 	@Redirect(method = "sendChunkDataPackets", at = @At(value = "INVOKE", target = "Lorg/apache/commons/lang3/mutable/MutableObject;getValue()Ljava/lang/Object;", remap = false, ordinal = 1))
 	private Object vertigo_createNewPacket(MutableObject<?> instance, @Local(argsOnly = true) ServerPlayerEntity player, @Local(argsOnly = true) WorldChunk chunk) {
-		Vertigo.SYNCING_PLAYER.set(player);
+		VertigoInternals.SYNCING_PLAYER.set(player);
 		try {
 			return new ChunkDataS2CPacket(chunk, this.lightingProvider, null, null);
 		}
 		finally {
-			Vertigo.SYNCING_PLAYER.set(null);
+			VertigoInternals.SYNCING_PLAYER.set(null);
 		}
 	}
 

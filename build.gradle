@@ -1,7 +1,7 @@
 import java.lang.reflect.Method
 
 plugins() {
-	id('fabric-loom') version('1.9-SNAPSHOT')
+	id('fabric-loom') version('1.10-SNAPSHOT')
 }
 
 version = project.mod_version
@@ -48,7 +48,7 @@ dependencies() {
 
 	modImplementation("net.fabricmc.fabric-api:fabric-api:${ project.fabric_version }")
 
-	String manifoldVersion = '2025.1.1'
+	String manifoldVersion = '2025.1.5'
 	annotationProcessor("systems.manifold:manifold-preprocessor:$manifoldVersion")
 	testAnnotationProcessor("systems.manifold:manifold-preprocessor:$manifoldVersion")
 	include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:0.2.0")))
@@ -220,7 +220,8 @@ for (Version version in [
 	new Version(20, 6),
 	new Version(21, 1),
 	new Version(21, 3),
-	new Version(21, 4)
+	new Version(21, 4),
+	new Version(21, 5),
 ]) {
 	Version capturedVersion = version
 	tasks.register("Switch to ${capturedVersion.longhand()}", WriteProperties) {
@@ -243,6 +244,7 @@ MC_1_21_1=12101
 MC_1_21_2=12102
 MC_1_21_3=12103
 MC_1_21_4=12104
+MC_1_21_5=12105
 MC_VERSION=${capturedVersion.shorthand()}"""
 			)
 		}
