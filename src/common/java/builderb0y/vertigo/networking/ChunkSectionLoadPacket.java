@@ -200,7 +200,11 @@ implements VertigoS2CPacket {
 			int z = chunk.getPos().getStartZ() | ((blockEntityData.packedXZ >>> 4) & 15);
 			BlockEntity blockEntity = chunk.getBlockEntity(new BlockPos(x, y, z), CreationType.IMMEDIATE);
 			if (blockEntity != null && blockEntityData.nbt != null && blockEntity.getType() == blockEntityData.type) {
-				#if MC_VERSION >= MC_1_20_5
+				#if MC_VERSION >= MC_1_21_6
+					try (net.minecraft.util.ErrorReporter.Logging logging = new net.minecraft.util.ErrorReporter.Logging(blockEntity.getReporterContext(), Vertigo.LOGGER)) {
+						blockEntity.read(net.minecraft.storage.NbtReadView.create(logging, world.getRegistryManager(), blockEntityData.nbt));
+					}
+				#elif MC_VERSION >= MC_1_20_5
 					blockEntity.read(blockEntityData.nbt, world.getRegistryManager());
 				#else
 					blockEntity.readNbt(blockEntityData.nbt);

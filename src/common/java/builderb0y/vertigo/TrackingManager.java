@@ -8,6 +8,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,6 +32,13 @@ public abstract class TrackingManager {
 		ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register(
 			(ServerPlayerEntity player, ServerWorld origin, ServerWorld destination) -> {
 				TrackingManager trackingManager = PLAYERS.get(player);
+				if (trackingManager != null) trackingManager.onDimensionChanged();
+			}
+		);
+		ServerPlayerEvents.AFTER_RESPAWN.register(
+			(ServerPlayerEntity oldPlayer, ServerPlayerEntity newPlayer, boolean alive) -> {
+				PLAYERS.remove(oldPlayer);
+				TrackingManager trackingManager = PLAYERS.get(newPlayer);
 				if (trackingManager != null) trackingManager.onDimensionChanged();
 			}
 		);

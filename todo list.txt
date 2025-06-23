@@ -7,5 +7,5 @@ I think I only have a "vertigo installed" packet registered in one direction and
 mod compatibility:
 
 changelog:
-	* Ported to MC 1.21.5.
-	* For mod developers: Fixed VertigoServerEvents.SECTION_UNLOADED sometimes firing after the unload packet is sent, when its contract clearly states that it should be fired before.
+	* Port to MC 1.21.6.
+	* Fix chunks not loading after respawning.

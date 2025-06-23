@@ -139,7 +139,7 @@ implements VertigoS2CPacket {
 	}
 
 	public static void send(ServerPlayerEntity player, int chunkX, int chunkZ, BitSet mask) {
-		WorldChunk chunk = (WorldChunk)(player.getServerWorld().getChunk(chunkX, chunkZ, ChunkStatus.FULL, false));
+		WorldChunk chunk = (WorldChunk)(player.getWorld().getChunk(chunkX, chunkZ, ChunkStatus.FULL, false));
 		if (chunk == null) return;
 		PaletteStorage palette = ((ChunkSkyLight_Accessors)(chunk.getChunkSkyLight())).vertigo_getPalette();
 		IntArrayList queuedPositions = new IntArrayList(mask.cardinality());

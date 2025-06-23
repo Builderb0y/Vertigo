@@ -80,7 +80,7 @@ public class SectionTrackingManager extends TrackingManager {
 			if (ValkyrienSkiesCompat.isInShipyard(chunkX, chunkZ)) {
 				continue;
 			}
-			WorldChunk chunk = (WorldChunk)(player.getServerWorld().getChunk(chunkX, chunkZ, ChunkStatus.FULL, false));
+			WorldChunk chunk = (WorldChunk)(player.getWorld().getChunk(chunkX, chunkZ, ChunkStatus.FULL, false));
 			if (chunk == null) { //???
 				iterator.remove();
 				continue;
