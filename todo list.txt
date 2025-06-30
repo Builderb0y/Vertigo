@@ -7,5 +7,3 @@ I think I only have a "vertigo installed" packet registered in one direction and
 mod compatibility:
 
 changelog:
-	* Port to MC 1.21.6.
-	* Fix chunks not loading after respawning.
