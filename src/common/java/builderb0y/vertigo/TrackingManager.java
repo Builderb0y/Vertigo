@@ -2,19 +2,16 @@ package builderb0y.vertigo;
 
 import java.util.Iterator;
 import java.util.Map;
-import java.util.WeakHashMap;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.WorldChunk;
 
@@ -24,24 +21,15 @@ import builderb0y.vertigo.networking.VertigoInstalledPacket;
 public abstract class TrackingManager {
 
 	/** used on the logical server to refer to every player on the server. */
-	public static final WeakHashMap<ServerPlayerEntity, TrackingManager> PLAYERS = new WeakHashMap<>();
+	public static final WeakIdentityHashMap<ServerPlayerEntity, TrackingManager> PLAYERS = new WeakIdentityHashMap<>();
 	/** used on the logical client to refer to the current player. */
 	public static TrackingManager CLIENT;
 
 	static {
-		ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register(
-			(ServerPlayerEntity player, ServerWorld origin, ServerWorld destination) -> {
-				TrackingManager trackingManager = PLAYERS.get(player);
-				if (trackingManager != null) trackingManager.onDimensionChanged();
-			}
-		);
-		ServerPlayerEvents.AFTER_RESPAWN.register(
-			(ServerPlayerEntity oldPlayer, ServerPlayerEntity newPlayer, boolean alive) -> {
-				PLAYERS.remove(oldPlayer);
-				TrackingManager trackingManager = PLAYERS.get(newPlayer);
-				if (trackingManager != null) trackingManager.onDimensionChanged();
-			}
-		);
+		ServerPlayerEvents.COPY_FROM.register((ServerPlayerEntity oldPlayer, ServerPlayerEntity newPlayer, boolean alive) -> {
+			TrackingManager manager = PLAYERS.get(oldPlayer);
+			if (manager != null) PLAYERS.put(newPlayer, manager);
+		});
 	}
 
 	@Environment(EnvType.CLIENT)
@@ -77,7 +65,7 @@ public abstract class TrackingManager {
 				ServerPlayerEntity player = entry.getKey();
 				TrackingManager manager = entry.getValue();
 				if (player.isDisconnected()) {
-					manager.onDisconnect();
+					manager.clear();
 					iterator.remove();
 				}
 				else {
@@ -99,8 +87,6 @@ public abstract class TrackingManager {
 
 	public abstract void update(ServerPlayerEntity player);
 
-	public abstract void onDisconnect();
-
 	public abstract void onChunkLoaded(ServerPlayerEntity player, int chunkX, int chunkZ);
 
 	public abstract void onChunkUnloaded(ServerPlayerEntity player, int chunkX, int chunkZ);
@@ -113,5 +99,5 @@ public abstract class TrackingManager {
 
 	public abstract void onLightingChanged(BlockPos pos);
 
-	public abstract void onDimensionChanged();
+	public abstract void clear();
 }

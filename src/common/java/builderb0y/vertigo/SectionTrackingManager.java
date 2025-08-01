@@ -29,19 +29,21 @@ import builderb0y.vertigo.networking.SkylightUpdatePacket;
 public class SectionTrackingManager extends TrackingManager {
 
 	/** all chunks currently being tracked. */
-	public final Long2ObjectOpenHashMap<ChunkState> chunkBounds = new Long2ObjectOpenHashMap<>(256);
+	public final Long2ObjectMap<ChunkState> chunkBounds = new Long2ObjectOpenHashMap<>(256);
 	public final LongOpenHashSet skylightUpdates = new LongOpenHashSet();
 	public int previousSectionY, previousViewDistance;
 
+	/** client constructor. */
 	public SectionTrackingManager() {}
 
+	/** server constructor. */
 	public SectionTrackingManager(ServerPlayerEntity player) {
 		this.previousSectionY = player.getBlockY() >> 4;
 		this.previousViewDistance = VersionUtil.getViewDistance(player);
 	}
 
 	@Override
-	public void onDimensionChanged() {
+	public void clear() {
 		this.chunkBounds.clear();
 		this.skylightUpdates.clear();
 	}
@@ -150,11 +152,6 @@ public class SectionTrackingManager extends TrackingManager {
 				info.skylightMask.clear();
 			}
 		}
-	}
-
-	@Override
-	public void onDisconnect() {
-		this.chunkBounds.clear();
 	}
 
 	@Override

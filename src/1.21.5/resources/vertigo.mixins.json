@@ -5,14 +5,15 @@
 	"compatibilityLevel": "JAVA_21",
 	"plugin": "builderb0y.vertigo.mixin.VertigoMixinPlugin",
 	"mixins": [
-		"ChunkData_FilterSections",
 		"ChunkDataSender_TrackPlayer",
+		"ChunkData_FilterSections",
 		"ChunkHolder_FilterSections",
 		"ChunkSkyLight_Accessors",
 		"PlayerLookup_AutomaticCompatibility",
 		"ScalableLux_ChunkAccessMixin_Undoing",
 		"ScalableLux_LevelChunkMixin_Undoing",
 		"ScalableLux_ProtoChunkMixin_Undoing",
+		"ServerCommonNetworkHandler_InterceptRespawn",
 		"WorldChunk_SyncSkylight"
 	],
 	"client": [

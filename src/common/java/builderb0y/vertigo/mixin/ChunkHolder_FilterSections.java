@@ -8,8 +8,10 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -30,7 +32,7 @@ public class ChunkHolder_FilterSections {
 		return original;
 	}
 
-	@ModifyVariable(method = "flushUpdates", at = @At(value = "INVOKE", target = "Ljava/util/List;isEmpty()Z", ordinal = 1), index = 3)
+	@ModifyVariable(method = "flushUpdates", at = @At(value = "CONSTANT", args = "nullValue=true"), index = 3)
 	private List<ServerPlayerEntity> vertigo_filterPlayers(
 		List<ServerPlayerEntity> current,
 		@Share("originalPlayerList") LocalRef<List<ServerPlayerEntity>> original,

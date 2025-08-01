@@ -26,7 +26,7 @@ public class ChunkTrackingManager extends TrackingManager {
 	public ChunkTrackingManager(ServerPlayerEntity player) {}
 
 	@Override
-	public void onDimensionChanged() {
+	public void clear() {
 		this.loadedChunks.clear();
 	}
 
@@ -44,11 +44,6 @@ public class ChunkTrackingManager extends TrackingManager {
 	@Override
 	public void update(ServerPlayerEntity player) {
 		//no-op.
-	}
-
-	@Override
-	public void onDisconnect() {
-		this.loadedChunks.clear();
 	}
 
 	@Override

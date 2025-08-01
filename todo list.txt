@@ -7,3 +7,6 @@ I think I only have a "vertigo installed" packet registered in one direction and
 mod compatibility:
 
 changelog:
+	* Fixed race condition when changing dimensions or respawning causing chunks to successfully load initially, but future block updates to fail.
+		* In particular, this bug meant that the player would not be able to interact with blocks until relogging.
+	* Fixed potential issue syncing block updates when there's more than one player nearby on the server.

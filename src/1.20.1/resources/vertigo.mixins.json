@@ -9,10 +9,11 @@
 		"ChunkHolder_FilterSections",
 		"ChunkSkyLight_Accessors",
 		"PlayerLookup_AutomaticCompatibility",
-		"ThreadedAnvilChunkStorage_TrackPlayer",
 		"ScalableLux_ChunkAccessMixin_Undoing",
 		"ScalableLux_LevelChunkMixin_Undoing",
 		"ScalableLux_ProtoChunkMixin_Undoing",
+		"ServerPlayNetworkHandler_InterceptRespawn",
+		"ThreadedAnvilChunkStorage_TrackPlayer",
 		"WorldChunk_SyncSkylight"
 	],
 	"client": [

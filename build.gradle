@@ -48,7 +48,7 @@ dependencies() {
 
 	modImplementation("net.fabricmc.fabric-api:fabric-api:${ project.fabric_version }")
 
-	String manifoldVersion = '2025.1.23'
+	String manifoldVersion = '2025.1.25'
 	annotationProcessor("systems.manifold:manifold-preprocessor:$manifoldVersion")
 	testAnnotationProcessor("systems.manifold:manifold-preprocessor:$manifoldVersion")
 	include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:0.2.0")))
@@ -145,6 +145,7 @@ test() {
 			throw new IllegalStateException("Release file $project.version-MC$minecraft_version already exists. If you intend to overwrite this file, delete it first. Otherwise, you probably forgot to bump the version.")
 		}
 	}
+	jvmArgs('-Xmx256m')
 }
 
 build() {

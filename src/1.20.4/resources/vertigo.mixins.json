@@ -13,6 +13,7 @@
 		"ScalableLux_ChunkAccessMixin_Undoing",
 		"ScalableLux_LevelChunkMixin_Undoing",
 		"ScalableLux_ProtoChunkMixin_Undoing",
+		"ServerCommonNetworkHandler_InterceptRespawn",
 		"WorldChunk_SyncSkylight"
 	],
 	"client": [
