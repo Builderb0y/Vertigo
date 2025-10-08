@@ -12,6 +12,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.packet.CustomPayload.Id;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.PaletteStorage;
@@ -24,6 +25,7 @@ import net.minecraft.world.chunk.light.ChunkSkyLight;
 
 import builderb0y.vertigo.TrackingManager;
 import builderb0y.vertigo.TrackingManager.LoadedRange;
+import builderb0y.vertigo.VersionUtil;
 import builderb0y.vertigo.Vertigo;
 import builderb0y.vertigo.mixin.ChunkSkyLight_Accessors;
 import builderb0y.vertigo.compat.ScalableLuxCompat;
@@ -139,7 +141,7 @@ implements VertigoS2CPacket {
 	}
 
 	public static void send(ServerPlayerEntity player, int chunkX, int chunkZ, BitSet mask) {
-		WorldChunk chunk = (WorldChunk)(player.getWorld().getChunk(chunkX, chunkZ, ChunkStatus.FULL, false));
+		WorldChunk chunk = (WorldChunk)(VersionUtil.getWorld(player).getChunk(chunkX, chunkZ, ChunkStatus.FULL, false));
 		if (chunk == null) return;
 		PaletteStorage palette = ((ChunkSkyLight_Accessors)(chunk.getChunkSkyLight())).vertigo_getPalette();
 		IntArrayList queuedPositions = new IntArrayList(mask.cardinality());

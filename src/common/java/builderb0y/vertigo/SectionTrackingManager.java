@@ -82,7 +82,7 @@ public class SectionTrackingManager extends TrackingManager {
 			if (ValkyrienSkiesCompat.isInShipyard(chunkX, chunkZ)) {
 				continue;
 			}
-			WorldChunk chunk = (WorldChunk)(player.getWorld().getChunk(chunkX, chunkZ, ChunkStatus.FULL, false));
+			WorldChunk chunk = (WorldChunk)(VersionUtil.getWorld(player).getChunk(chunkX, chunkZ, ChunkStatus.FULL, false));
 			if (chunk == null) { //???
 				iterator.remove();
 				continue;
@@ -158,14 +158,14 @@ public class SectionTrackingManager extends TrackingManager {
 	public void onChunkLoaded(ServerPlayerEntity player, int chunkX, int chunkZ) {
 		ChunkState bound = this.chunkBounds.computeIfAbsent(ChunkPos.toLong(chunkX, chunkZ), (long packedPos) -> new ChunkState());
 		if (ValkyrienSkiesCompat.isInShipyard(chunkX, chunkZ)) {
-			bound.minY = VersionUtil.sectionMinYInclusive(player.getWorld());
-			bound.maxY = VersionUtil.sectionMaxYInclusive(player.getWorld());
+			bound.minY = VersionUtil.sectionMinYInclusive(VersionUtil.getWorld(player));
+			bound.maxY = VersionUtil.sectionMaxYInclusive(VersionUtil.getWorld(player));
 			LoadRangePacket.send(player, chunkX, chunkZ, bound.minY, bound.maxY);
 		}
 		else {
 			int playerCenterY = player.getBlockY() >> 4;
-			bound.minY = Math.max(playerCenterY - VersionUtil.getViewDistance(player), VersionUtil.sectionMinYInclusive(player.getWorld()));
-			bound.maxY = Math.min(playerCenterY + VersionUtil.getViewDistance(player), VersionUtil.sectionMaxYInclusive(player.getWorld()));
+			bound.minY = Math.max(playerCenterY - VersionUtil.getViewDistance(player), VersionUtil.sectionMinYInclusive(VersionUtil.getWorld(player)));
+			bound.maxY = Math.min(playerCenterY + VersionUtil.getViewDistance(player), VersionUtil.sectionMaxYInclusive(VersionUtil.getWorld(player)));
 			LoadRangePacket.send(player, chunkX, chunkZ, bound.minY, bound.maxY);
 			BitSet everywhere = new BitSet(256);
 			everywhere.set(0, 256);

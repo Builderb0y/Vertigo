@@ -14,6 +14,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
 import builderb0y.vertigo.TrackingManager;
+import builderb0y.vertigo.VersionUtil;
 
 public class VertigoAPI {
 
@@ -39,7 +40,7 @@ public class VertigoAPI {
 	this method is NOT thread-safe, and should ONLY be called from the render thread or the server thread.
 	*/
 	public static boolean isSectionLoaded(PlayerEntity player, int sectionX, int sectionY, int sectionZ) {
-		if (player.getWorld().isClient) {
+		if (VersionUtil.getWorld(player).isClient()) {
 			return isSectionLoadedClient(player, sectionX, sectionY, sectionZ);
 		}
 		else {
@@ -120,7 +121,7 @@ public class VertigoAPI {
 	this method is NOT thread-safe, and should ONLY be called from the render thread or the server thread.
 	*/
 	public static boolean isTrackingSections(PlayerEntity player) {
-		if (player.getWorld().isClient) {
+		if (VersionUtil.getWorld(player).isClient()) {
 			return isTrackingSectionsClient(player);
 		}
 		else {

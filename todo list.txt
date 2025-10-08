@@ -7,4 +7,4 @@ I think I only have a "vertigo installed" packet registered in one direction and
 mod compatibility:
 
 changelog:
-* Possibly fixed crash that could maybe be explained by other mods calling setBlockState() on the wrong thread?
+* Port to MC 1.21.9 and 1.21.10.

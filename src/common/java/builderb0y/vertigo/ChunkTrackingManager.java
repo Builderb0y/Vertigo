@@ -49,8 +49,8 @@ public class ChunkTrackingManager extends TrackingManager {
 	@Override
 	public void onChunkLoaded(ServerPlayerEntity player, int chunkX, int chunkZ) {
 		this.loadedChunks.add(ChunkPos.toLong(chunkX, chunkZ));
-		int minSection = VersionUtil.sectionMinYInclusive(player.getWorld());
-		int maxSection = VersionUtil.sectionMaxYExclusive(player.getWorld());
+		int minSection = VersionUtil.sectionMinYInclusive(VersionUtil.getWorld(player));
+		int maxSection = VersionUtil.sectionMaxYExclusive(VersionUtil.getWorld(player));
 		for (int sectionY = minSection; sectionY < maxSection; sectionY++) {
 			VertigoServerEvents.SECTION_LOADED.invoker().onSectionLoaded(player, chunkX, sectionY, chunkZ);
 		}
@@ -59,8 +59,8 @@ public class ChunkTrackingManager extends TrackingManager {
 	@Override
 	public void onChunkUnloaded(ServerPlayerEntity player, int chunkX, int chunkZ) {
 		this.loadedChunks.remove(ChunkPos.toLong(chunkX, chunkZ));
-		int minSection = VersionUtil.sectionMinYInclusive(player.getWorld());
-		int maxSection = VersionUtil.sectionMaxYExclusive(player.getWorld());
+		int minSection = VersionUtil.sectionMinYInclusive(VersionUtil.getWorld(player));
+		int maxSection = VersionUtil.sectionMaxYExclusive(VersionUtil.getWorld(player));
 		for (int sectionY = minSection; sectionY < maxSection; sectionY++) {
 			VertigoServerEvents.SECTION_UNLOADED.invoker().onSectionUnloaded(player, chunkX, sectionY, chunkZ);
 		}
