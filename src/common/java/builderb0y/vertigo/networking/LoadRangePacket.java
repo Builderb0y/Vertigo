@@ -46,10 +46,10 @@ implements VertigoS2CPacket {
 			)
 		);
 
-		public static final Id<LoadRangePacket> ID = new Id<>(PACKET_ID);
+		public static final CustomPayload.Id<LoadRangePacket> ID = new CustomPayload.Id<>(PACKET_ID);
 
 		@Override
-		public Id<? extends CustomPayload> getId() {
+		public CustomPayload.Id<? extends CustomPayload> getId() {
 			return ID;
 		}
 

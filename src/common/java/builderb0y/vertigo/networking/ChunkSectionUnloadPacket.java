@@ -11,6 +11,7 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.WorldChunk.WrappedBlockEntityTickInvoker;
@@ -47,10 +48,10 @@ implements VertigoS2CPacket {
 			)
 		);
 
-		public static final Id<ChunkSectionUnloadPacket> ID = new Id<>(PACKET_ID);
+		public static final CustomPayload.Id<ChunkSectionUnloadPacket> ID = new CustomPayload.Id<>(PACKET_ID);
 
 		@Override
-		public Id<? extends CustomPayload> getId() {
+		public CustomPayload.Id<? extends CustomPayload> getId() {
 			return ID;
 		}
 
@@ -91,25 +92,9 @@ implements VertigoS2CPacket {
 		if (chunk == null) return;
 		VertigoClientEvents.SECTION_UNLOADED.invoker().onSectionUnloaded(this.sectionX, this.sectionY, this.sectionZ);
 		chunk.getSectionArray()[chunk.sectionCoordToIndex(this.sectionY)] = VersionUtil.newEmptyChunkSection(world.getRegistryManager());
-		chunk.getBlockEntities().values().removeIf((BlockEntity blockEntity) -> {
-			if (blockEntity.getPos().getY() >> 4 == this.sectionY) {
-				blockEntity.markRemoved();
-				return true;
-			}
-			else {
-				return false;
-			}
-		});
-		chunk.blockEntityTickers.values().removeIf((WrappedBlockEntityTickInvoker ticker) -> {
-			if (ticker.isRemoved()) {
-				return true;
-			}
-			if (ticker.getPos().getY() >> 4 == this.sectionY) {
-				ticker.setWrapped(WorldChunk.EMPTY_BLOCK_ENTITY_TICKER);
-				return true;
-			}
-			return false;
-		});
+		for (BlockPos pos : chunk.getBlockEntities().keySet().stream().filter((BlockPos pos) -> pos.getY() >> 4 == this.sectionY).toArray(BlockPos[]::new)) {
+			chunk.removeBlockEntity(pos);
+		}
 		#if MC_VERSION >= MC_1_21_4
 			world.getChunkManager().chunks.refreshSections(chunk);
 		#elif MC_VERSION >= MC_1_21_2

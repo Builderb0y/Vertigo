@@ -7,4 +7,4 @@ I think I only have a "vertigo installed" packet registered in one direction and
 mod compatibility:
 
 changelog:
-* Port to MC 1.21.9 and 1.21.10.
+* Switch to vanilla method of removing block entities. Maybe this will fix an issue that shouldn't ever happen to begin with?

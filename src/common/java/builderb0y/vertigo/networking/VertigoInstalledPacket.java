@@ -34,10 +34,10 @@ public record VertigoInstalledPacket() implements VertigoC2SPacket {
 			PacketCodec.unit(new VertigoInstalledPacket())
 		);
 
-		public static final Id<VertigoInstalledPacket> ID = new Id<>(PACKET_ID);
+		public static final CustomPayload.Id<VertigoInstalledPacket> ID = new CustomPayload.Id<>(PACKET_ID);
 
 		@Override
-		public Id<? extends CustomPayload> getId() {
+		public CustomPayload.Id<? extends CustomPayload> getId() {
 			return ID;
 		}
 

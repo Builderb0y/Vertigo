@@ -101,10 +101,10 @@ implements VertigoS2CPacket {
 				ChunkSectionLoadPacket::new
 			)
 		);
-		public static final Id<ChunkSectionLoadPacket> ID = new Id<>(PACKET_ID);
+		public static final CustomPayload.Id<ChunkSectionLoadPacket> ID = new CustomPayload.Id<>(PACKET_ID);
 
 		@Override
-		public Id<? extends CustomPayload> getId() {
+		public CustomPayload.Id<? extends CustomPayload> getId() {
 			return ID;
 		}
 

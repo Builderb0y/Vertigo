@@ -12,7 +12,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.CustomPayload.Id;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.PaletteStorage;
@@ -49,7 +48,7 @@ implements VertigoS2CPacket {
 	#if MC_VERSION >= MC_1_20_5
 
 		public static final PacketCodec<ByteBuf, SkylightUpdatePacket> PACKET_CODEC = PacketCodec.of(SkylightUpdatePacket::write, SkylightUpdatePacket::read);
-		public static final Id<SkylightUpdatePacket> ID = new Id<>(PACKET_ID);
+		public static final CustomPayload.Id<SkylightUpdatePacket> ID = new CustomPayload.Id<>(PACKET_ID);
 
 		@Override
 		public Id<? extends CustomPayload> getId() {
