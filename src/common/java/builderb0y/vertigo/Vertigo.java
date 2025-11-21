@@ -40,7 +40,7 @@ public class Vertigo implements ModInitializer {
 			SERVER = null;
 			VertigoInternals.EMPTY_SECTION = null;
 		});
-		ServerTickEvents.END_SERVER_TICK.register(SectionTrackingManager::tickAll);
+		ServerTickEvents.END_WORLD_TICK.register(SectionTrackingManager::tickAll);
 
 		if (AUDIT) {
 			MixinEnvironment.getCurrentEnvironment().audit();

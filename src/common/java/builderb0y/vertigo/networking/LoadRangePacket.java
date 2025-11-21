@@ -5,6 +5,8 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -93,8 +95,10 @@ implements VertigoS2CPacket {
 	@Override
 	@Environment(EnvType.CLIENT)
 	public void process() {
+		ClientPlayerEntity player = MinecraftClient.getInstance().player;
+		if (player == null) return;
+		if (!(TrackingManager.get(player) instanceof SectionTrackingManager manager)) return;
 		long chunkPos = ChunkPos.toLong(this.chunkX, this.chunkZ);
-		SectionTrackingManager manager = (SectionTrackingManager)(TrackingManager.CLIENT);
 		if (this.maxY >= this.minY) {
 			ChunkState bound = manager.chunkBounds.get(chunkPos);
 			if (bound != null) {

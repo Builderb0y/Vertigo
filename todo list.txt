@@ -6,5 +6,7 @@ I think I only have a "vertigo installed" packet registered in one direction and
 
 mod compatibility:
 
+bugs:
+
 changelog:
-* Switch to vanilla method of removing block entities. Maybe this will fix an issue that shouldn't ever happen to begin with?
+* Fix a lot of things exploding catastrophically after players respawn.

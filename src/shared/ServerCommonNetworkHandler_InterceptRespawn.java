@@ -39,7 +39,7 @@ public class ServerCommonNetworkHandler_InterceptRespawn {
 		CallbackInfo callback
 	) {
 		if (((Object)(this)) instanceof ServerPlayNetworkHandler handler && packet instanceof PlayerRespawnS2CPacket) {
-			TrackingManager trackingManager = TrackingManager.PLAYERS.get(handler.player);
+			TrackingManager trackingManager = TrackingManager.get(handler.player);
 			if (trackingManager != null) trackingManager.clear();
 		}
 	}

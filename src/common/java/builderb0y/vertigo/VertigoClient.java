@@ -5,6 +5,8 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
 
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.world.chunk.WorldChunk;
 
@@ -16,7 +18,19 @@ public class VertigoClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		VertigoNetworking.initClient();
-		ClientChunkEvents.CHUNK_LOAD.register((ClientWorld world, WorldChunk chunk) -> TrackingManager.CLIENT.onChunkLoadedClient(chunk));
-		ClientChunkEvents.CHUNK_UNLOAD.register((ClientWorld world, WorldChunk chunk) -> TrackingManager.CLIENT.onChunkUnloadedClient(chunk));
+		ClientChunkEvents.CHUNK_LOAD.register((ClientWorld world, WorldChunk chunk) -> {
+			ClientPlayerEntity player = MinecraftClient.getInstance().player;
+			if (player == null) return;
+			TrackingManager manager = TrackingManager.get(player);
+			if (manager == null) return;
+			manager.onChunkLoadedClient(chunk);
+		});
+		ClientChunkEvents.CHUNK_UNLOAD.register((ClientWorld world, WorldChunk chunk) -> {
+			ClientPlayerEntity player = MinecraftClient.getInstance().player;
+			if (player == null) return;
+			TrackingManager manager = TrackingManager.get(player);
+			if (manager == null) return;
+			manager.onChunkUnloadedClient(chunk);
+		});
 	}
 }

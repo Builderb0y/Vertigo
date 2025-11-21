@@ -3,10 +3,6 @@ package builderb0y.vertigo.api;
 import java.util.List;
 import java.util.stream.Stream;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -14,7 +10,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
 import builderb0y.vertigo.TrackingManager;
-import builderb0y.vertigo.VersionUtil;
 
 public class VertigoAPI {
 
@@ -26,7 +21,7 @@ public class VertigoAPI {
 	as such, even if the section is within range of the player,
 	it is not guaranteed to be loaded on the client yet.
 
-	aldo, vertigo's unload distance is one section bigger than its load distance.
+	also, vertigo's unload distance is one section bigger than its load distance.
 	as such, even if the section is outside the range of the player,
 	it is not guaranteed to be unloaded yet either.
 
@@ -40,23 +35,8 @@ public class VertigoAPI {
 	this method is NOT thread-safe, and should ONLY be called from the render thread or the server thread.
 	*/
 	public static boolean isSectionLoaded(PlayerEntity player, int sectionX, int sectionY, int sectionZ) {
-		if (VersionUtil.getWorld(player).isClient()) {
-			return isSectionLoadedClient(player, sectionX, sectionY, sectionZ);
-		}
-		else {
-			TrackingManager manager = TrackingManager.PLAYERS.get(player);
-			return manager != null && manager.isLoaded(sectionX, sectionY, sectionZ);
-		}
-	}
-
-	@Environment(EnvType.CLIENT)
-	private static boolean isSectionLoadedClient(PlayerEntity player, int sectionX, int sectionY, int sectionZ) {
-		if (player == MinecraftClient.getInstance().player) {
-			return TrackingManager.CLIENT.isLoaded(sectionX, sectionY, sectionZ);
-		}
-		else {
-			return false;
-		}
+		TrackingManager manager = TrackingManager.get(player);
+		return manager != null && manager.isLoaded(sectionX, sectionY, sectionZ);
 	}
 
 	public static boolean isSectionLoaded(PlayerEntity player, ChunkSectionPos pos) {
@@ -76,11 +56,10 @@ public class VertigoAPI {
 	blocks are in the chunk section at the provided coordinates.
 	*/
 	public static Stream<ServerPlayerEntity> getPlayersTrackingSection(ServerWorld world, int sectionX, int sectionY, int sectionZ) {
-		if (TrackingManager.PLAYERS.isEmpty()) return Stream.empty();
 		List<ServerPlayerEntity> players = world.getPlayers();
 		if (players.isEmpty()) return Stream.empty();
 		return players.stream().filter((ServerPlayerEntity player) -> {
-			TrackingManager manager = TrackingManager.PLAYERS.get(player);
+			TrackingManager manager = TrackingManager.get(player);
 			return manager != null && manager.isLoaded(sectionX, sectionY, sectionZ);
 		});
 	}
@@ -121,22 +100,7 @@ public class VertigoAPI {
 	this method is NOT thread-safe, and should ONLY be called from the render thread or the server thread.
 	*/
 	public static boolean isTrackingSections(PlayerEntity player) {
-		if (VersionUtil.getWorld(player).isClient()) {
-			return isTrackingSectionsClient(player);
-		}
-		else {
-			TrackingManager trackingManager = TrackingManager.PLAYERS.get(player);
-			return trackingManager != null && trackingManager.otherSideHasVertigoInstalled();
-		}
-	}
-
-	@Environment(EnvType.CLIENT)
-	private static boolean isTrackingSectionsClient(PlayerEntity player) {
-		if (player == MinecraftClient.getInstance().player) {
-			return TrackingManager.CLIENT.otherSideHasVertigoInstalled();
-		}
-		else {
-			return false;
-		}
+		TrackingManager trackingManager = TrackingManager.get(player);
+		return trackingManager != null && trackingManager.otherSideHasVertigoInstalled();
 	}
 }

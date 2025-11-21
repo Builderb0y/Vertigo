@@ -42,14 +42,14 @@ public abstract class WorldChunk_SyncSkylight {
 		if (this.getWorld() instanceof ServerWorld serverWorld) {
 			if (serverWorld.getServer().isOnThread()) {
 				for (ServerPlayerEntity player : serverWorld.getPlayers()) {
-					TrackingManager manager = TrackingManager.PLAYERS.get(player);
+					TrackingManager manager = TrackingManager.get(player);
 					if (manager != null) manager.onLightingChanged(pos);
 				}
 			}
 			else {
 				serverWorld.getServer().execute(() -> {
 					for (ServerPlayerEntity player : serverWorld.getPlayers()) {
-						TrackingManager manager = TrackingManager.PLAYERS.get(player);
+						TrackingManager manager = TrackingManager.get(player);
 						if (manager != null) manager.onLightingChanged(pos);
 					}
 				});

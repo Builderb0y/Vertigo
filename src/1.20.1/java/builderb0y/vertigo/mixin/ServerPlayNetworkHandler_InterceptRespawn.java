@@ -36,7 +36,7 @@ public class ServerPlayNetworkHandler_InterceptRespawn {
 	@Inject(method = "sendPacket(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/PacketCallbacks;)V", at = @At("HEAD"))
 	private void vertigo_interceptDimensionChange(Packet<?> packet, @Nullable PacketCallbacks callbacks, CallbackInfo ci) {
 		if (packet instanceof PlayerRespawnS2CPacket) {
-			TrackingManager trackingManager = TrackingManager.PLAYERS.get(this.player);
+			TrackingManager trackingManager = TrackingManager.get(this.player);
 			if (trackingManager != null) trackingManager.clear();
 		}
 	}

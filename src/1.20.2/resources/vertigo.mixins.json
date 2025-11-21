@@ -5,10 +5,11 @@
 	"compatibilityLevel": "JAVA_17",
 	"plugin": "builderb0y.vertigo.mixin.VertigoMixinPlugin",
 	"mixins": [
-		"ChunkData_FilterSections",
 		"ChunkDataSender_TrackPlayer",
+		"ChunkData_FilterSections",
 		"ChunkHolder_FilterSections",
 		"ChunkSkyLight_Accessors",
+		"PlayerEntity_HoldTrackingManager",
 		"PlayerLookup_AutomaticCompatibility",
 		"ScalableLux_ChunkAccessMixin_Undoing",
 		"ScalableLux_LevelChunkMixin_Undoing",
@@ -17,7 +18,7 @@
 		"WorldChunk_SyncSkylight"
 	],
 	"client": [
-		"ClientPlayNetworkHandler_SetWorldHook"
+		"ClientPlayerEntity_CreateTrackingManager"
 	],
 	"injectors": {
 		"defaultRequire": 1

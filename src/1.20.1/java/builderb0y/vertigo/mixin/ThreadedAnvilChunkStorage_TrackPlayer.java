@@ -57,13 +57,13 @@ public class ThreadedAnvilChunkStorage_TrackPlayer {
 
 	@Inject(method = "sendChunkDataPackets", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;sendChunkPacket(Lnet/minecraft/util/math/ChunkPos;Lnet/minecraft/network/packet/Packet;)V", shift = Shift.AFTER))
 	private void vertigo_uncapturePlayer(ServerPlayerEntity player, MutableObject<ChunkDataS2CPacket> cachedDataPacket, WorldChunk chunk, CallbackInfo callback) {
-		TrackingManager manager = TrackingManager.PLAYERS.computeIfAbsent(player, TrackingManager::create);
+		TrackingManager manager = TrackingManager.getOrCreate(player);
 		manager.onChunkLoaded(player, chunk.getPos().x, chunk.getPos().z);
 	}
 
 	@Inject(method = "sendWatchPackets", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;sendUnloadChunkPacket(Lnet/minecraft/util/math/ChunkPos;)V", shift = Shift.AFTER))
 	private void vertigo_onChunkUnloaded(ServerPlayerEntity player, ChunkPos pos, MutableObject<ChunkDataS2CPacket> packet, boolean oldWithinViewDistance, boolean newWithinViewDistance, CallbackInfo callback) {
-		TrackingManager manager = TrackingManager.PLAYERS.get(player);
+		TrackingManager manager = TrackingManager.get(player);
 		if (manager != null) manager.onChunkUnloaded(player, pos.x, pos.z);
 	}
 }

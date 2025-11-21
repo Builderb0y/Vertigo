@@ -1,4 +1,7 @@
 import java.lang.reflect.Method
+import java.nio.file.Files
+import java.util.jar.JarEntry
+import java.util.jar.JarFile
 
 plugins() {
 	id('fabric-loom') version('1.11-SNAPSHOT')
@@ -40,6 +43,46 @@ repositories() {
 	}
 }
 
+static void extractNestedJars(File dependenciesFolder, File toUnpack) {
+	try (JarFile jar = new JarFile(toUnpack)) {
+		Enumeration<JarEntry> entries = jar.entries()
+		while (entries.hasMoreElements()) {
+			JarEntry entry = entries.nextElement()
+			String name = entry.getName()
+			if (name.startsWith('META-INF/jars/') && name.endsWith('.jar') && !name.regionMatches(false, 'META-inf/jars/'.length(), 'fabric-', 0, 'fabric-'.length())) {
+				name = name.substring('META-INF/jars/'.length())
+				File unpackDir = new File(dependenciesFolder, name.substring(0, name.length() - '.jar'.length()))
+				unpackDir.mkdir()
+				File unpacked = new File(unpackDir, name)
+				try (FileOutputStream out = new FileOutputStream(unpacked)) {
+					jar.getInputStream(entry).transferTo(out)
+				}
+				extractNestedJars(unpackDir, unpacked)
+			}
+		}
+	}
+}
+
+void extractDependencies() {
+	File jijDependenciesFolder = file('jijDependencies')
+	jijDependenciesFolder.deleteDir()
+	jijDependenciesFolder.mkdir()
+	for (String dependencyType : [ 'implementation', 'runtimeOnly', 'compileOnly' ]) {
+		File specificDependenciesFolder = new File(jijDependenciesFolder, dependencyType)
+		specificDependenciesFolder.mkdir()
+		for (File from : file("dependencies/${ project.minecraft_version }/$dependencyType").listFiles()) {
+			String fileName = from.getName()
+			File fromRoot = new File(specificDependenciesFolder, fileName.substring(0, fileName.length() - '.jar'.length()))
+			fromRoot.mkdir()
+			File to = new File(fromRoot, fileName)
+			if (!to.exists()) {
+				Files.copy(from.toPath(), to.toPath())
+				extractNestedJars(fromRoot, to)
+			}
+		}
+	}
+}
+
 dependencies() {
 	// To change the versions see the gradle.properties file
 	minecraft("com.mojang:minecraft:${ project.minecraft_version }")
@@ -53,9 +96,12 @@ dependencies() {
 	testAnnotationProcessor("systems.manifold:manifold-preprocessor:$manifoldVersion")
 	include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:0.2.0")))
 
-	modCompileOnly(fileTree(file("dependencies/${ project.minecraft_version }/compileOnly")))
-	modRuntimeOnly(fileTree(file("dependencies/${ project.minecraft_version }/runtimeOnly")))
-	modImplementation(fileTree(file("dependencies/${ project.minecraft_version }/implementation")))
+	if (!Boolean.getBoolean('skipJIJExtraction')) {
+		extractDependencies()
+	}
+	modImplementation(fileTree(new File('jijDependencies/implementation')))
+	modCompileOnly   (fileTree(new File('jijDependencies/compileOnly')))
+	modRuntimeOnly   (fileTree(new File('jijDependencies/runtimeOnly')))
 
 	testImplementation('org.junit.jupiter:junit-jupiter-api:5.3.0-M1')
 	testImplementation('org.junit.jupiter:junit-jupiter-engine:5.3.0-M1')

@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -153,12 +154,16 @@ implements VertigoS2CPacket {
 	@Override
 	@Environment(EnvType.CLIENT)
 	public void process() {
+		ClientPlayerEntity player = MinecraftClient.getInstance().player;
+		if (player == null) return;
+		TrackingManager manager = TrackingManager.get(player);
+		if (manager == null) return;
+		LoadedRange range = manager.getLoadedRange(this.chunkX, this.chunkZ);
+		if (range == null) return;
 		ClientWorld world = MinecraftClient.getInstance().world;
 		if (world == null) return;
 		WorldChunk chunk = (WorldChunk)(world.getChunk(this.chunkX, this.chunkZ, ChunkStatus.FULL, false));
 		if (chunk == null) return;
-		LoadedRange range = TrackingManager.CLIENT.getLoadedRange(this.chunkX, this.chunkZ);
-		if (range == null) return;
 		ChunkSkyLight skylight = chunk.getChunkSkyLight();
 		ChunkSkyLight_Accessors accessors = (ChunkSkyLight_Accessors)(skylight);
 		ChunkLightingView lighting = world.getLightingProvider().get(LightType.SKY);

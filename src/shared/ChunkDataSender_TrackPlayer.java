@@ -21,7 +21,7 @@ public class ChunkDataSender_TrackPlayer {
 
 	@Inject(method = "sendChunkData", at = @At("HEAD"))
 	private static void vertigo_markPlayer(ServerPlayNetworkHandler handler, ServerWorld world, WorldChunk chunk, CallbackInfo callback) {
-		TrackingManager manager = TrackingManager.PLAYERS.computeIfAbsent(handler.player, TrackingManager::create);
+		TrackingManager manager = TrackingManager.getOrCreate(handler.player);
 		if (manager.otherSideHasVertigoInstalled()) {
 			VertigoInternals.SYNCING_PLAYER.set(handler.player);
 		}
@@ -30,13 +30,13 @@ public class ChunkDataSender_TrackPlayer {
 	@Inject(method = "sendChunkData", at = @At("RETURN"))
 	private static void vertigo_unmarkPlayer(ServerPlayNetworkHandler handler, ServerWorld world, WorldChunk chunk, CallbackInfo callback) {
 		VertigoInternals.SYNCING_PLAYER.set(null);
-		TrackingManager manager = TrackingManager.PLAYERS.computeIfAbsent(handler.player, TrackingManager::create);
+		TrackingManager manager = TrackingManager.getOrCreate(handler.player);
 		manager.onChunkLoaded(handler.player, chunk.getPos().x, chunk.getPos().z);
 	}
 
 	@Inject(method = "unload", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayNetworkHandler;sendPacket(Lnet/minecraft/network/packet/Packet;)V", shift = Shift.AFTER))
 	private void vertigo_onUnload(ServerPlayerEntity player, ChunkPos pos, CallbackInfo callback) {
-		TrackingManager manager = TrackingManager.PLAYERS.get(player);
+		TrackingManager manager = TrackingManager.get(player);
 		if (manager != null) manager.onChunkUnloaded(player, pos.x, pos.z);
 	}
 }
