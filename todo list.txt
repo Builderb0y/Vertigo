@@ -9,4 +9,4 @@ mod compatibility:
 bugs:
 
 changelog:
-* Fix a lot of things exploding catastrophically after players respawn.
+* Port to MC 1.21.11.

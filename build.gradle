@@ -4,11 +4,15 @@ import java.util.jar.JarEntry
 import java.util.jar.JarFile
 
 plugins() {
-	id('fabric-loom') version('1.11-SNAPSHOT')
+	id('fabric-loom') version('1.14-SNAPSHOT')
 }
 
 version = project.mod_version
 group = project.maven_group
+
+base() {
+	archivesName = 'Vertigo'
+}
 
 sourceSets() {
 	main() {
@@ -103,8 +107,8 @@ dependencies() {
 	modCompileOnly   (fileTree(new File('jijDependencies/compileOnly')))
 	modRuntimeOnly   (fileTree(new File('jijDependencies/runtimeOnly')))
 
-	testImplementation('org.junit.jupiter:junit-jupiter-api:5.3.0-M1')
-	testImplementation('org.junit.jupiter:junit-jupiter-engine:5.3.0-M1')
+	testImplementation('org.junit.jupiter:junit-jupiter:5.7.1')
+	testRuntimeOnly('org.junit.platform:junit-platform-launcher')
 }
 
 loom() {
@@ -165,7 +169,7 @@ java() {
 
 jar() {
 	from("LICENSE") {
-		rename() { "${ it }_${ project.archivesBaseName }" }
+		rename() { "${ it }_${ project.base.archivesName.get() }" }
 	}
 }
 
@@ -173,25 +177,22 @@ tasks.withType(AbstractArchiveTask).configureEach() {
 	archiveVersion = "$version-MC$minecraft_version"
 }
 
-task copyToReleases(type: Copy) {
+tasks.register('copyToReleases', Copy) {
 	dependsOn(remapJar)
+	mustRunAfter(test)
 	from("$projectDir/build/libs") {
-		include("$archivesBaseName-${project.version}-MC${minecraft_version}.jar")
-		rename() {
-			"$archivesBaseName-$project.version-MC${minecraft_version}.jar"
-		}
+		include("${ project.base.archivesName.get() }-${ project.version }-MC${ minecraft_version }.jar")
 	}
-	into(file("releases/${project.version.toString().replace('.' as char, '/' as char)}"))
+	into(file("releases/${ project.version.toString().replace('.' as char, '/' as char) }"))
 }
 
 test() {
 	useJUnitPlatform()
 	doFirst() {
-		if (file("releases/${project.version.toString().replace('.' as char, '/' as char)}/$archivesBaseName-$project.version-MC${minecraft_version}.jar").exists()) {
+		if (file("releases/${project.version.toString().replace('.' as char, '/' as char)}/${ project.base.archivesName.get() }-$project.version-MC${minecraft_version}.jar").exists()) {
 			throw new IllegalStateException("Release file $project.version-MC$minecraft_version already exists. If you intend to overwrite this file, delete it first. Otherwise, you probably forgot to bump the version.")
 		}
 	}
-	jvmArgs('-Xmx256m')
 }
 
 build() {
@@ -250,9 +251,6 @@ Map<String, String> loadVersion(Version version) {
 	)
 }
 
-//this is the dumbest thing I've ever done with gradle.
-//its sole purpose is to display the current
-//version in the gradle window in intellij.
 tasks.register("Currently V$project.version for MC $project.minecraft_version") {
 	group('versions')
 	doFirst() {
@@ -271,6 +269,7 @@ for (Version version in [
 	new Version(21, 5),
 	new Version(21, 8),
 	new Version(21, 10),
+	new Version(21, 11),
 ]) {
 	Version capturedVersion = version
 	tasks.register("Switch to ${capturedVersion.longhand()}", WriteProperties) {
@@ -299,6 +298,7 @@ MC_1_21_7=12107
 MC_1_21_8=12108
 MC_1_21_9=12109
 MC_1_21_10=12110
+MC_1_21_11=12111
 MC_VERSION=${capturedVersion.shorthand()}"""
 			)
 		}

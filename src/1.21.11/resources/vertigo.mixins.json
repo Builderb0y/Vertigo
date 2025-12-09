@@ -1,0 +1,26 @@
+{
+	"required": true,
+	"minVersion": "0.8",
+	"package": "builderb0y.vertigo.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"plugin": "builderb0y.vertigo.mixin.VertigoMixinPlugin",
+	"mixins": [
+		"ChunkDataSender_TrackPlayer",
+		"ChunkData_FilterSections",
+		"ChunkHolder_FilterSections",
+		"ChunkSkyLight_Accessors",
+		"PlayerEntity_HoldTrackingManager",
+		"PlayerLookup_AutomaticCompatibility",
+		"ScalableLux_ChunkAccessMixin_Undoing",
+		"ScalableLux_LevelChunkMixin_Undoing",
+		"ScalableLux_ProtoChunkMixin_Undoing",
+		"ServerCommonNetworkHandler_InterceptRespawn",
+		"WorldChunk_SyncSkylight"
+	],
+	"client": [
+		"ClientPlayerEntity_CreateTrackingManager"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
