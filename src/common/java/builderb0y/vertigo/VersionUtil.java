@@ -1,54 +1,54 @@
 package builderb0y.vertigo;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.world.HeightLimitView;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.ChunkSection;
-import net.minecraft.world.chunk.PalettesFactory;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelHeightAccessor;
+import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.level.chunk.PalettedContainerFactory;
 
 public class VersionUtil {
 
-	public static int getViewDistance(ServerPlayerEntity player) {
+	public static int getViewDistance(ServerPlayer player) {
 
-		return player.getViewDistance();
+		return player.requestedViewDistance();
 	}
 
-	public static ChunkSection newEmptyChunkSection(DynamicRegistryManager registries) {
+	public static LevelChunkSection newEmptyChunkSection(RegistryAccess registries) {
 		//using an anonymous subclass fixes compatibility with the AntiXray mod.
 
-		return new ChunkSection(PalettesFactory.fromRegistryManager(registries)) {
+		return new LevelChunkSection(PalettedContainerFactory.create(registries)) {
 
 		};
 	}
 
-	public static int blockMinYInclusive(HeightLimitView view) {
-		return view.getBottomY();
+	public static int blockMinYInclusive(LevelHeightAccessor view) {
+		return view.getMinY();
 	}
 
-	public static int sectionMinYInclusive(HeightLimitView view) {
-		return view.getBottomSectionCoord();
+	public static int sectionMinYInclusive(LevelHeightAccessor view) {
+		return view.getMinSectionY();
 	}
 
-	public static int blockMaxYExclusive(HeightLimitView view) {
-		return view.getBottomY() + view.getHeight();
+	public static int blockMaxYExclusive(LevelHeightAccessor view) {
+		return view.getMinY() + view.getHeight();
 	}
 
-	public static int sectionMaxYExclusive(HeightLimitView view) {
+	public static int sectionMaxYExclusive(LevelHeightAccessor view) {
 		return blockMaxYExclusive(view) >> 4;
 	}
 
-	public static int blockMaxYInclusive(HeightLimitView view) {
+	public static int blockMaxYInclusive(LevelHeightAccessor view) {
 		return blockMaxYExclusive(view) - 1;
 	}
 
-	public static int sectionMaxYInclusive(HeightLimitView view) {
+	public static int sectionMaxYInclusive(LevelHeightAccessor view) {
 		return sectionMaxYExclusive(view) - 1;
 	}
 
-	public static World getWorld(Entity entity) {
+	public static Level getWorld(Entity entity) {
 
-		return entity.getEntityWorld();
+		return entity.level();
 	}
 }

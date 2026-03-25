@@ -2,13 +2,11 @@ package builderb0y.vertigo.api;
 
 import java.util.List;
 import java.util.stream.Stream;
-
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkSectionPos;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import builderb0y.vertigo.TrackingManager;
 
 public class VertigoAPI {
@@ -34,20 +32,20 @@ public class VertigoAPI {
 
 	this method is NOT thread-safe, and should ONLY be called from the render thread or the server thread.
 	*/
-	public static boolean isSectionLoaded(PlayerEntity player, int sectionX, int sectionY, int sectionZ) {
+	public static boolean isSectionLoaded(Player player, int sectionX, int sectionY, int sectionZ) {
 		TrackingManager manager = TrackingManager.get(player);
 		return manager != null && manager.isLoaded(sectionX, sectionY, sectionZ);
 	}
 
-	public static boolean isSectionLoaded(PlayerEntity player, ChunkSectionPos pos) {
-		return isSectionLoaded(player, pos.getSectionX(), pos.getSectionY(), pos.getSectionZ());
+	public static boolean isSectionLoaded(Player player, SectionPos pos) {
+		return isSectionLoaded(player, pos.x(), pos.y(), pos.z());
 	}
 
-	public static boolean isBlockLoaded(PlayerEntity player, int blockX, int blockY, int blockZ) {
+	public static boolean isBlockLoaded(Player player, int blockX, int blockY, int blockZ) {
 		return isSectionLoaded(player, blockX >> 4, blockY >> 4, blockZ >> 4);
 	}
 
-	public static boolean isBlockLoaded(PlayerEntity player, BlockPos pos) {
+	public static boolean isBlockLoaded(Player player, BlockPos pos) {
 		return isBlockLoaded(player, pos.getX(), pos.getY(), pos.getZ());
 	}
 
@@ -55,24 +53,24 @@ public class VertigoAPI {
 	returns a Stream containing all players who know what
 	blocks are in the chunk section at the provided coordinates.
 	*/
-	public static Stream<ServerPlayerEntity> getPlayersTrackingSection(ServerWorld world, int sectionX, int sectionY, int sectionZ) {
-		List<ServerPlayerEntity> players = world.getPlayers();
+	public static Stream<ServerPlayer> getPlayersTrackingSection(ServerLevel world, int sectionX, int sectionY, int sectionZ) {
+		List<ServerPlayer> players = world.players();
 		if (players.isEmpty()) return Stream.empty();
-		return players.stream().filter((ServerPlayerEntity player) -> {
+		return players.stream().filter((ServerPlayer player) -> {
 			TrackingManager manager = TrackingManager.get(player);
 			return manager != null && manager.isLoaded(sectionX, sectionY, sectionZ);
 		});
 	}
 
-	public static Stream<ServerPlayerEntity> getPlayersTrackingSection(ServerWorld world, ChunkSectionPos pos) {
-		return getPlayersTrackingSection(world, pos.getSectionX(), pos.getSectionY(), pos.getSectionZ());
+	public static Stream<ServerPlayer> getPlayersTrackingSection(ServerLevel world, SectionPos pos) {
+		return getPlayersTrackingSection(world, pos.x(), pos.y(), pos.z());
 	}
 
-	public static Stream<ServerPlayerEntity> getPlayersTrackingBlock(ServerWorld world, int blockX, int blockY, int blockZ) {
+	public static Stream<ServerPlayer> getPlayersTrackingBlock(ServerLevel world, int blockX, int blockY, int blockZ) {
 		return getPlayersTrackingSection(world, blockX >> 4, blockY >> 4, blockZ >> 4);
 	}
 
-	public static Stream<ServerPlayerEntity> getPlayersTrackingBlock(ServerWorld world, BlockPos pos) {
+	public static Stream<ServerPlayer> getPlayersTrackingBlock(ServerLevel world, BlockPos pos) {
 		return getPlayersTrackingBlock(world, pos.getX(), pos.getY(), pos.getZ());
 	}
 
@@ -99,7 +97,7 @@ public class VertigoAPI {
 
 	this method is NOT thread-safe, and should ONLY be called from the render thread or the server thread.
 	*/
-	public static boolean isTrackingSections(PlayerEntity player) {
+	public static boolean isTrackingSections(Player player) {
 		TrackingManager trackingManager = TrackingManager.get(player);
 		return trackingManager != null && trackingManager.otherSideHasVertigoInstalled();
 	}

@@ -2,8 +2,7 @@ package builderb0y.vertigo.api;
 
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
-
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 
 public class VertigoClientEvents {
 
@@ -17,7 +16,7 @@ public class VertigoClientEvents {
 	if the player moved vertically and triggered new sections to be sent,
 	then this event will be called for every section which got loaded in this way.
 
-	get the world from {@link MinecraftClient#world}.
+	get the world from {@link Minecraft#level}.
 
 	this event is called on the render thread.
 	*/
@@ -42,7 +41,7 @@ public class VertigoClientEvents {
 	if the player moved vertically and triggered sections to unload,
 	then this event will be called for every section which got unloaded in this way.
 
-	get the world from {@link MinecraftClient#world}.
+	get the world from {@link Minecraft#level}.
 
 	this event is called on the render thread.
 	*/

@@ -3,13 +3,11 @@ package builderb0y.vertigo;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.chunk.LevelChunk;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.chunk.WorldChunk;
-
 import builderb0y.vertigo.api.VertigoClientEvents;
 import builderb0y.vertigo.api.VertigoServerEvents;
 
@@ -24,7 +22,7 @@ public class ChunkTrackingManager extends TrackingManager {
 	public ChunkTrackingManager() {
 	}
 
-	public ChunkTrackingManager(ServerPlayerEntity player) {
+	public ChunkTrackingManager(ServerPlayer player) {
 	}
 
 	@Override
@@ -34,23 +32,23 @@ public class ChunkTrackingManager extends TrackingManager {
 
 	@Override
 	public boolean isLoaded(int sectionX, int sectionY, int sectionZ) {
-		return this.loadedChunks.contains(ChunkPos.toLong(sectionX, sectionZ));
+		return this.loadedChunks.contains(ChunkPos.asLong(sectionX, sectionZ));
 	}
 
 	@Override
 	public @Nullable LoadedRange getLoadedRange(int chunkX, int chunkZ) {
-		boolean loaded = this.loadedChunks.contains(ChunkPos.toLong(chunkX, chunkZ));
+		boolean loaded = this.loadedChunks.contains(ChunkPos.asLong(chunkX, chunkZ));
 		return loaded ? (int sectionY) -> true : null;
 	}
 
 	@Override
-	public void update(ServerPlayerEntity player) {
+	public void update(ServerPlayer player) {
 		//no-op.
 	}
 
 	@Override
-	public void onChunkLoaded(ServerPlayerEntity player, int chunkX, int chunkZ) {
-		this.loadedChunks.add(ChunkPos.toLong(chunkX, chunkZ));
+	public void onChunkLoaded(ServerPlayer player, int chunkX, int chunkZ) {
+		this.loadedChunks.add(ChunkPos.asLong(chunkX, chunkZ));
 		int minSection = VersionUtil.sectionMinYInclusive(VersionUtil.getWorld(player));
 		int maxSection = VersionUtil.sectionMaxYExclusive(VersionUtil.getWorld(player));
 		for (int sectionY = minSection; sectionY < maxSection; sectionY++) {
@@ -59,8 +57,8 @@ public class ChunkTrackingManager extends TrackingManager {
 	}
 
 	@Override
-	public void onChunkUnloaded(ServerPlayerEntity player, int chunkX, int chunkZ) {
-		this.loadedChunks.remove(ChunkPos.toLong(chunkX, chunkZ));
+	public void onChunkUnloaded(ServerPlayer player, int chunkX, int chunkZ) {
+		this.loadedChunks.remove(ChunkPos.asLong(chunkX, chunkZ));
 		int minSection = VersionUtil.sectionMinYInclusive(VersionUtil.getWorld(player));
 		int maxSection = VersionUtil.sectionMaxYExclusive(VersionUtil.getWorld(player));
 		for (int sectionY = minSection; sectionY < maxSection; sectionY++) {
@@ -70,7 +68,7 @@ public class ChunkTrackingManager extends TrackingManager {
 
 	@Override
 	@Environment(EnvType.CLIENT)
-	public void onChunkLoadedClient(WorldChunk chunk) {
+	public void onChunkLoadedClient(LevelChunk chunk) {
 		this.loadedChunks.add(chunk.getPos().toLong());
 		int minSection = VersionUtil.sectionMinYInclusive(chunk);
 		int maxSection = VersionUtil.sectionMaxYExclusive(chunk);
@@ -81,7 +79,7 @@ public class ChunkTrackingManager extends TrackingManager {
 
 	@Override
 	@Environment(EnvType.CLIENT)
-	public void onChunkUnloadedClient(WorldChunk chunk) {
+	public void onChunkUnloadedClient(LevelChunk chunk) {
 		this.loadedChunks.remove(chunk.getPos().toLong());
 		int minSection = VersionUtil.sectionMinYInclusive(chunk);
 		int maxSection = VersionUtil.sectionMaxYExclusive(chunk);

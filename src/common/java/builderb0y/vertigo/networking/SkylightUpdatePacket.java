@@ -7,23 +7,21 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-
-import net.minecraft.block.Blocks;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.collection.PaletteStorage;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.LightType;
-import net.minecraft.world.chunk.ChunkStatus;
-import net.minecraft.world.chunk.WorldChunk;
-import net.minecraft.world.chunk.light.ChunkLightingView;
-import net.minecraft.world.chunk.light.ChunkSkyLight;
-
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.BitStorage;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.world.level.lighting.ChunkSkyLightSources;
+import net.minecraft.world.level.lighting.LayerLightEventListener;
 import builderb0y.vertigo.TrackingManager;
 import builderb0y.vertigo.TrackingManager.LoadedRange;
 import builderb0y.vertigo.VersionUtil;
@@ -40,11 +38,11 @@ public record SkylightUpdatePacket(
 
 	public static final Identifier PACKET_ID = Vertigo.modID("skylight_update");
 
-	public static final PacketCodec<ByteBuf, SkylightUpdatePacket> PACKET_CODEC = PacketCodec.of(SkylightUpdatePacket::write, SkylightUpdatePacket::read);
-	public static final CustomPayload.Id<SkylightUpdatePacket> ID = new CustomPayload.Id<>(PACKET_ID);
+	public static final StreamCodec<ByteBuf, SkylightUpdatePacket> PACKET_CODEC = StreamCodec.ofMember(SkylightUpdatePacket::write, SkylightUpdatePacket::read);
+	public static final CustomPacketPayload.Type<SkylightUpdatePacket> ID = new CustomPacketPayload.Type<>(PACKET_ID);
 
 	@Override
-	public Id<? extends CustomPayload> getId() {
+	public Type<? extends CustomPacketPayload> type() {
 		return ID;
 	}
 
@@ -116,10 +114,10 @@ public record SkylightUpdatePacket(
 		return packed & 0xFFFF;
 	}
 
-	public static void send(ServerPlayerEntity player, int chunkX, int chunkZ, BitSet mask) {
-		WorldChunk chunk = (WorldChunk)(VersionUtil.getWorld(player).getChunk(chunkX, chunkZ, ChunkStatus.FULL, false));
+	public static void send(ServerPlayer player, int chunkX, int chunkZ, BitSet mask) {
+		LevelChunk chunk = (LevelChunk)(VersionUtil.getWorld(player).getChunk(chunkX, chunkZ, ChunkStatus.FULL, false));
 		if (chunk == null) return;
-		PaletteStorage palette = ((ChunkSkyLight_Accessors)(chunk.getChunkSkyLight())).vertigo_getPalette();
+		BitStorage palette = ((ChunkSkyLight_Accessors)(chunk.getSkyLightSources())).vertigo_getPalette();
 		IntArrayList queuedPositions = new IntArrayList(mask.cardinality());
 		for (int index = -1; (index = mask.nextSetBit(index + 1)) >= 0; ) {
 			queuedPositions.add(packSkylightPos(index, palette.get(index)));
@@ -130,42 +128,42 @@ public record SkylightUpdatePacket(
 	@Override
 	@Environment(EnvType.CLIENT)
 	public void process() {
-		ClientPlayerEntity player = MinecraftClient.getInstance().player;
+		LocalPlayer player = Minecraft.getInstance().player;
 		if (player == null) return;
 		TrackingManager manager = TrackingManager.get(player);
 		if (manager == null) return;
 		LoadedRange range = manager.getLoadedRange(this.chunkX, this.chunkZ);
 		if (range == null) return;
-		ClientWorld world = MinecraftClient.getInstance().world;
+		ClientLevel world = Minecraft.getInstance().level;
 		if (world == null) return;
-		WorldChunk chunk = (WorldChunk)(world.getChunk(this.chunkX, this.chunkZ, ChunkStatus.FULL, false));
+		LevelChunk chunk = (LevelChunk)(world.getChunk(this.chunkX, this.chunkZ, ChunkStatus.FULL, false));
 		if (chunk == null) return;
-		ChunkSkyLight skylight = chunk.getChunkSkyLight();
+		ChunkSkyLightSources skylight = chunk.getSkyLightSources();
 		ChunkSkyLight_Accessors accessors = (ChunkSkyLight_Accessors)(skylight);
-		ChunkLightingView lighting = world.getLightingProvider().get(LightType.SKY);
-		BlockPos.Mutable mutablePos = new BlockPos.Mutable();
+		LayerLightEventListener lighting = world.getLightEngine().getLayerListener(LightLayer.SKY);
+		BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
 		int chunkMinY = accessors.vertigo_getMinY();
 		for (int index = 0, size = this.skyPositions.size(); index < size; index++) {
 			int pos = this.skyPositions.getInt(index);
 			int localIndex = unpackIndex(pos);
 			int newRelativeY = unpackRelativeY(pos);
-			int oldRelativeY = accessors.vertigo_getPalette().swap(localIndex, newRelativeY);
-			int x = chunk.getPos().getStartX() | (localIndex & 15);
-			int z = chunk.getPos().getStartZ() | (localIndex >>> 4);
+			int oldRelativeY = accessors.vertigo_getPalette().getAndSet(localIndex, newRelativeY);
+			int x = chunk.getPos().getMinBlockX() | (localIndex & 15);
+			int z = chunk.getPos().getMinBlockZ() | (localIndex >>> 4);
 			if (ScalableLuxCompat.scalableLuxInstalled) {
 				if (oldRelativeY != newRelativeY) {
 					oldRelativeY--;
 					newRelativeY--;
 					if (!range.isLoaded((oldRelativeY + chunkMinY) >> 4)) {
-						world.setBlockState(
+						world.setBlockAndUpdate(
 							mutablePos.set(x, oldRelativeY + chunkMinY, z),
-							Blocks.AIR.getDefaultState()
+							Blocks.AIR.defaultBlockState()
 						);
 					}
 					if (!range.isLoaded((newRelativeY + chunkMinY) >> 4)) {
-						world.setBlockState(
+						world.setBlockAndUpdate(
 							mutablePos.set(x, newRelativeY + chunkMinY, z),
-							Blocks.STONE.getDefaultState()
+							Blocks.STONE.defaultBlockState()
 						);
 					}
 				}

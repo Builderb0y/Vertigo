@@ -3,9 +3,7 @@ package builderb0y.vertigo.compat;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
-
-import net.minecraft.util.math.ChunkPos;
-
+import net.minecraft.world.level.ChunkPos;
 import builderb0y.vertigo.Vertigo;
 import builderb0y.vertigo.VertigoInternals;
 

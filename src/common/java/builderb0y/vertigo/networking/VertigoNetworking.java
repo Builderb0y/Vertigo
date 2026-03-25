@@ -6,8 +6,7 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-
-import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.codec.StreamCodec;
 
 public class VertigoNetworking {
 
@@ -31,8 +30,8 @@ public class VertigoNetworking {
 		ClientPlayNetworking.registerGlobalReceiver(SkylightUpdatePacket.ID, VertigoS2CPacket::receive);
 	}
 
-	public static PacketCodec<ByteBuf, byte[]> fixedSizeByteArray(int size) {
-		return new PacketCodec<ByteBuf, byte[]>() {
+	public static StreamCodec<ByteBuf, byte[]> fixedSizeByteArray(int size) {
+		return new StreamCodec<ByteBuf, byte[]>() {
 
 			@Override
 			public byte[] decode(ByteBuf buffer) {

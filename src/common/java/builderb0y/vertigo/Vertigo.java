@@ -6,10 +6,8 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.MixinEnvironment;
-
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Identifier;
-
 import builderb0y.vertigo.api.VertigoClientEvents;
 import builderb0y.vertigo.api.VertigoServerEvents;
 import builderb0y.vertigo.networking.VertigoNetworking;
@@ -36,7 +34,7 @@ public class Vertigo implements ModInitializer {
 		VertigoNetworking.init();
 		ServerLifecycleEvents.SERVER_STARTED.register((MinecraftServer server) -> {
 			SERVER = server;
-			VertigoInternals.EMPTY_SECTION = VersionUtil.newEmptyChunkSection(server.getRegistryManager());
+			VertigoInternals.EMPTY_SECTION = VersionUtil.newEmptyChunkSection(server.registryAccess());
 		});
 		ServerLifecycleEvents.SERVER_STOPPED.register((MinecraftServer server) -> {
 			SERVER = null;
@@ -56,6 +54,6 @@ public class Vertigo implements ModInitializer {
 	}
 
 	public static Identifier modID(String path) {
-		return Identifier.of(MODID, path);
+		return Identifier.fromNamespaceAndPath(MODID, path);
 	}
 }

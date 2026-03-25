@@ -2,8 +2,7 @@ package builderb0y.vertigo.api;
 
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
-
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 public class VertigoServerEvents {
 
@@ -18,14 +17,14 @@ public class VertigoServerEvents {
 	if the player moved vertically and triggered new sections to be sent,
 	then this event will be called for every section which got loaded in this way.
 
-	get the player's world via {@link ServerPlayerEntity#getServerWorld()}.
+	get the player's world via {@link ServerPlayer#getServerWorld()}.
 
 	this event is called on the server thread.
 	*/
 	public static final Event<Load> SECTION_LOADED = EventFactory.createArrayBacked(
 		Load.class,
 		(Load[] events) -> {
-			return (ServerPlayerEntity player, int sectionX, int sectionY, int sectionZ) -> {
+			return (ServerPlayer player, int sectionX, int sectionY, int sectionZ) -> {
 				for (Load event : events) {
 					event.onSectionLoaded(player, sectionX, sectionY, sectionZ);
 				}
@@ -44,14 +43,14 @@ public class VertigoServerEvents {
 	if the player moved vertically and triggered sections to unload,
 	then this event will be called for every section which got unloaded in this way.
 
-	get the player's world via {@link ServerPlayerEntity#getServerWorld()}.
+	get the player's world via {@link ServerPlayer#getServerWorld()}.
 
 	this event is called on the server thread.
 	*/
 	public static final Event<Unload> SECTION_UNLOADED = EventFactory.createArrayBacked(
 		Unload.class,
 		(Unload[] events) -> {
-			return (ServerPlayerEntity player, int sectionX, int sectionY, int sectionZ) -> {
+			return (ServerPlayer player, int sectionX, int sectionY, int sectionZ) -> {
 				for (Unload event : events) {
 					event.onSectionUnloaded(player, sectionX, sectionY, sectionZ);
 				}
@@ -61,11 +60,11 @@ public class VertigoServerEvents {
 
 	public static interface Load {
 
-		public abstract void onSectionLoaded(ServerPlayerEntity player, int sectionX, int sectionY, int sectionZ);
+		public abstract void onSectionLoaded(ServerPlayer player, int sectionX, int sectionY, int sectionZ);
 	}
 
 	public static interface Unload {
 
-		public abstract void onSectionUnloaded(ServerPlayerEntity player, int sectionX, int sectionY, int sectionZ);
+		public abstract void onSectionUnloaded(ServerPlayer player, int sectionX, int sectionY, int sectionZ);
 	}
 }

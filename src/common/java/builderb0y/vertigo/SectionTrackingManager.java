@@ -9,14 +9,12 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.chunk.ChunkStatus;
-import net.minecraft.world.chunk.WorldChunk;
-
 import builderb0y.vertigo.api.VertigoClientEvents;
 import builderb0y.vertigo.api.VertigoServerEvents;
 import builderb0y.vertigo.compat.ValkyrienSkiesCompat;
@@ -46,7 +44,7 @@ public class SectionTrackingManager extends TrackingManager {
 	/**
 	server constructor.
 	*/
-	public SectionTrackingManager(ServerPlayerEntity player) {
+	public SectionTrackingManager(ServerPlayer player) {
 		this.previousSectionY = player.getBlockY() >> 4;
 		this.previousViewDistance = VersionUtil.getViewDistance(player);
 	}
@@ -59,17 +57,17 @@ public class SectionTrackingManager extends TrackingManager {
 
 	@Override
 	public boolean isLoaded(int sectionX, int sectionY, int sectionZ) {
-		ChunkState bound = this.chunkBounds.get(ChunkPos.toLong(sectionX, sectionZ));
+		ChunkState bound = this.chunkBounds.get(ChunkPos.asLong(sectionX, sectionZ));
 		return bound != null && bound.isLoaded(sectionY);
 	}
 
 	@Override
 	public @Nullable LoadedRange getLoadedRange(int chunkX, int chunkZ) {
-		return this.chunkBounds.get(ChunkPos.toLong(chunkX, chunkZ));
+		return this.chunkBounds.get(ChunkPos.asLong(chunkX, chunkZ));
 	}
 
 	@Override
-	public void update(ServerPlayerEntity player) {
+	public void update(ServerPlayer player) {
 		if (this.previousSectionY != player.getBlockY() >> 4 || this.previousViewDistance != VersionUtil.getViewDistance(player)) {
 			this.doUpdate(player);
 			this.previousSectionY = player.getBlockY() >> 4;
@@ -81,17 +79,17 @@ public class SectionTrackingManager extends TrackingManager {
 		}
 	}
 
-	public void doUpdate(ServerPlayerEntity player) {
+	public void doUpdate(ServerPlayer player) {
 		int playerCenterY = player.getBlockY() >> 4;
 		int range = VersionUtil.getViewDistance(player);
 		for (Iterator<Long2ObjectMap.Entry<ChunkState>> iterator = this.chunkBounds.long2ObjectEntrySet().iterator(); iterator.hasNext(); ) {
 			Long2ObjectMap.Entry<ChunkState> entry = iterator.next();
-			int chunkX = ChunkPos.getPackedX(entry.getLongKey());
-			int chunkZ = ChunkPos.getPackedZ(entry.getLongKey());
+			int chunkX = ChunkPos.getX(entry.getLongKey());
+			int chunkZ = ChunkPos.getZ(entry.getLongKey());
 			if (ValkyrienSkiesCompat.isInShipyard(chunkX, chunkZ)) {
 				continue;
 			}
-			WorldChunk chunk = (WorldChunk)(VersionUtil.getWorld(player).getChunk(chunkX, chunkZ, ChunkStatus.FULL, false));
+			LevelChunk chunk = (LevelChunk)(VersionUtil.getWorld(player).getChunk(chunkX, chunkZ, ChunkStatus.FULL, false));
 			if (chunk == null) { //???
 				iterator.remove();
 				continue;
@@ -144,19 +142,19 @@ public class SectionTrackingManager extends TrackingManager {
 		}
 	}
 
-	public void updateLight(ServerPlayerEntity player) {
+	public void updateLight(ServerPlayer player) {
 		for (
 			LongIterator iterator = this.skylightUpdates.longIterator();
 			iterator.hasNext();
 		) {
 			long chunkPos = iterator.nextLong();
-			if (ValkyrienSkiesCompat.isInShipyard(ChunkPos.getPackedX(chunkPos), ChunkPos.getPackedZ(chunkPos))) {
+			if (ValkyrienSkiesCompat.isInShipyard(ChunkPos.getX(chunkPos), ChunkPos.getZ(chunkPos))) {
 				continue;
 			}
 			ChunkState info = this.chunkBounds.get(chunkPos);
 			if (info != null) {
-				int chunkX = ChunkPos.getPackedX(chunkPos);
-				int chunkZ = ChunkPos.getPackedZ(chunkPos);
+				int chunkX = ChunkPos.getX(chunkPos);
+				int chunkZ = ChunkPos.getZ(chunkPos);
 				SkylightUpdatePacket.send(player, chunkX, chunkZ, info.skylightMask);
 				info.skylightMask.clear();
 			}
@@ -164,8 +162,8 @@ public class SectionTrackingManager extends TrackingManager {
 	}
 
 	@Override
-	public void onChunkLoaded(ServerPlayerEntity player, int chunkX, int chunkZ) {
-		ChunkState bound = this.chunkBounds.computeIfAbsent(ChunkPos.toLong(chunkX, chunkZ), (long packedPos) -> new ChunkState());
+	public void onChunkLoaded(ServerPlayer player, int chunkX, int chunkZ) {
+		ChunkState bound = this.chunkBounds.computeIfAbsent(ChunkPos.asLong(chunkX, chunkZ), (long packedPos) -> new ChunkState());
 		if (ValkyrienSkiesCompat.isInShipyard(chunkX, chunkZ)) {
 			bound.minY = VersionUtil.sectionMinYInclusive(VersionUtil.getWorld(player));
 			bound.maxY = VersionUtil.sectionMaxYInclusive(VersionUtil.getWorld(player));
@@ -186,8 +184,8 @@ public class SectionTrackingManager extends TrackingManager {
 	}
 
 	@Override
-	public void onChunkUnloaded(ServerPlayerEntity player, int chunkX, int chunkZ) {
-		ChunkState bounds = this.chunkBounds.remove(ChunkPos.toLong(chunkX, chunkZ));
+	public void onChunkUnloaded(ServerPlayer player, int chunkX, int chunkZ) {
+		ChunkState bounds = this.chunkBounds.remove(ChunkPos.asLong(chunkX, chunkZ));
 		if (bounds != null) {
 			for (int sectionY = bounds.minY; sectionY <= bounds.maxY; sectionY++) {
 				VertigoServerEvents.SECTION_UNLOADED.invoker().onSectionUnloaded(player, chunkX, sectionY, chunkZ);
@@ -198,13 +196,13 @@ public class SectionTrackingManager extends TrackingManager {
 
 	@Override
 	@Environment(EnvType.CLIENT)
-	public void onChunkLoadedClient(WorldChunk chunk) {
+	public void onChunkLoadedClient(LevelChunk chunk) {
 		//no-op; wait for LoadRangePacket to arrive.
 	}
 
 	@Override
 	@Environment(EnvType.CLIENT)
-	public void onChunkUnloadedClient(WorldChunk chunk) {
+	public void onChunkUnloadedClient(LevelChunk chunk) {
 		ChunkPos chunkPos = chunk.getPos();
 		ChunkState state = this.chunkBounds.remove(chunkPos.toLong());
 		if (state != null) {
@@ -216,7 +214,7 @@ public class SectionTrackingManager extends TrackingManager {
 
 	@Override
 	public void onLightingChanged(BlockPos pos) {
-		long chunkPos = ChunkPos.toLong(pos);
+		long chunkPos = ChunkPos.asLong(pos);
 		ChunkState info = this.chunkBounds.get(chunkPos);
 		if (info != null) {
 			this.skylightUpdates.add(chunkPos);

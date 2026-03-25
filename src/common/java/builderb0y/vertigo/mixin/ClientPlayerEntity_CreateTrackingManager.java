@@ -2,25 +2,23 @@ package builderb0y.vertigo.mixin;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.ClientRecipeBook;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.stats.StatsCounter;
+import net.minecraft.world.entity.player.Input;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.recipebook.ClientRecipeBook;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.stat.StatHandler;
-import net.minecraft.util.PlayerInput;
-
 import builderb0y.vertigo.TrackingManager;
 
 @Environment(EnvType.CLIENT)
-@Mixin(ClientPlayerEntity.class)
-public class ClientPlayerEntity_CreateTrackingManager extends AbstractClientPlayerEntity {
+@Mixin(LocalPlayer.class)
+public class ClientPlayerEntity_CreateTrackingManager extends AbstractClientPlayer {
 
 	public ClientPlayerEntity_CreateTrackingManager() {
 		super(null, null);
@@ -28,13 +26,13 @@ public class ClientPlayerEntity_CreateTrackingManager extends AbstractClientPlay
 
 	@Inject(method = "<init>", at = @At("RETURN"))
 	private void vertigo_createTrackingManager(
-		MinecraftClient client,
-		ClientWorld world,
-		ClientPlayNetworkHandler networkHandler,
-		StatHandler stats,
+		Minecraft client,
+		ClientLevel world,
+		ClientPacketListener networkHandler,
+		StatsCounter stats,
 		ClientRecipeBook recipeBook,
 
-		PlayerInput lastPlayerInput,
+		Input lastPlayerInput,
 
 		boolean lastSprinting,
 		CallbackInfo callback

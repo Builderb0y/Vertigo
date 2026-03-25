@@ -4,14 +4,12 @@ import java.util.Collection;
 import java.util.Objects;
 
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.ChunkPos;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
-
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-
 import builderb0y.vertigo.api.VertigoAPI;
 
 @Mixin(PlayerLookup.class)
@@ -24,10 +22,10 @@ public class PlayerLookup_AutomaticCompatibility {
 
 	MODDERS: if you want to sync the data anyway,
 	even if the client doesn't have this position loaded,
-	use {@link PlayerLookup#tracking(ServerWorld, ChunkPos)} instead.
+	use {@link PlayerLookup#tracking(ServerLevel, ChunkPos)} instead.
 	*/
 	@Overwrite
-	public static Collection<ServerPlayerEntity> tracking(ServerWorld world, BlockPos pos) {
+	public static Collection<ServerPlayer> tracking(ServerLevel world, BlockPos pos) {
 		Objects.requireNonNull(world, "The world cannot be null");
 		Objects.requireNonNull(pos, "BlockPos cannot be null");
 		return VertigoAPI.getPlayersTrackingBlock(world, pos).toList();

@@ -9,42 +9,40 @@ import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtAccounter;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData;
+import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ProblemReporter.ScopedCollector;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.chunk.DataLayer;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.LevelChunk.EntityCreationType;
+import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.world.level.storage.TagValueInput;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtSizeTracker;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.network.packet.s2c.play.ChunkData;
-import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.storage.NbtReadView;
-import net.minecraft.util.ErrorReporter.Logging;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.world.LightType;
-import net.minecraft.world.chunk.ChunkNibbleArray;
-import net.minecraft.world.chunk.ChunkSection;
-import net.minecraft.world.chunk.ChunkStatus;
-import net.minecraft.world.chunk.WorldChunk;
-import net.minecraft.world.chunk.WorldChunk.CreationType;
-
 import builderb0y.vertigo.VersionUtil;
 import builderb0y.vertigo.Vertigo;
 import builderb0y.vertigo.api.VertigoClientEvents;
 
 /**
-mostly a modified version of {@link ChunkDataS2CPacket} and
-{@link ChunkData} which works for single sections instead of whole chunks.
+mostly a modified version of {@link ClientboundLevelChunkWithLightPacket} and
+{@link ClientboundLevelChunkPacketData} which works for single sections instead of whole chunks.
 */
 public record ChunkSectionLoadPacket(
 	int sectionX,
@@ -54,7 +52,7 @@ public record ChunkSectionLoadPacket(
 	//and deserialized on the client network thread.
 	//as such, this either will contain a byte[] when the server creates the packet,
 	//and a chunk section when the client network thread creates it.
-	Either<byte[], ChunkSection> sectionData,
+	Either<byte[], LevelChunkSection> sectionData,
 	Optional<byte[]> skylightData,
 	List<BlockEntityData> blockEntities
 )
@@ -62,56 +60,56 @@ public record ChunkSectionLoadPacket(
 
 	public static final Identifier PACKET_ID = Vertigo.modID("section_load");
 
-	public static final PacketCodec<RegistryByteBuf, ChunkSectionLoadPacket> PACKET_CODEC = (
-		PacketCodec.tuple(
-			PacketCodecs.INTEGER,
+	public static final StreamCodec<RegistryFriendlyByteBuf, ChunkSectionLoadPacket> PACKET_CODEC = (
+		StreamCodec.composite(
+			ByteBufCodecs.INT,
 			ChunkSectionLoadPacket::sectionX,
 
-			PacketCodecs.INTEGER,
+			ByteBufCodecs.INT,
 			ChunkSectionLoadPacket::sectionY,
 
-			PacketCodecs.INTEGER,
+			ByteBufCodecs.INT,
 			ChunkSectionLoadPacket::sectionZ,
 
-			PacketCodec.of(
-				(Either<byte[], ChunkSection> either, RegistryByteBuf buffer) -> {
+			StreamCodec.ofMember(
+				(Either<byte[], LevelChunkSection> either, RegistryFriendlyByteBuf buffer) -> {
 					buffer.writeBytes(either.left().orElseThrow());
 				},
-				(RegistryByteBuf buffer) -> {
-					ChunkSection section = VersionUtil.newEmptyChunkSection(buffer.getRegistryManager());
-					section.readDataPacket(buffer);
+				(RegistryFriendlyByteBuf buffer) -> {
+					LevelChunkSection section = VersionUtil.newEmptyChunkSection(buffer.registryAccess());
+					section.read(buffer);
 					return Either.right(section);
 				}
 			),
 			ChunkSectionLoadPacket::sectionData,
 
-			PacketCodecs.optional(VertigoNetworking.fixedSizeByteArray(2048)),
+			ByteBufCodecs.optional(VertigoNetworking.fixedSizeByteArray(2048)),
 			ChunkSectionLoadPacket::skylightData,
 
-			BlockEntityData.PACKET_CODEC.collect(PacketCodecs.toList(4096)),
+			BlockEntityData.PACKET_CODEC.apply(ByteBufCodecs.list(4096)),
 			ChunkSectionLoadPacket::blockEntities,
 
 			ChunkSectionLoadPacket::new
 		)
 	);
-	public static final CustomPayload.Id<ChunkSectionLoadPacket> ID = new CustomPayload.Id<>(PACKET_ID);
+	public static final CustomPacketPayload.Type<ChunkSectionLoadPacket> ID = new CustomPacketPayload.Type<>(PACKET_ID);
 
 	@Override
-	public CustomPayload.Id<? extends CustomPayload> getId() {
+	public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
 		return ID;
 	}
 
-	public static void send(ServerPlayerEntity player, WorldChunk chunk, int sectionY) {
+	public static void send(ServerPlayer player, LevelChunk chunk, int sectionY) {
 		int sectionX = chunk.getPos().x;
 		int sectionZ = chunk.getPos().z;
-		ChunkSection section = chunk.getSection(chunk.sectionCoordToIndex(sectionY));
+		LevelChunkSection section = chunk.getSection(chunk.getSectionIndexFromSectionY(sectionY));
 		//section.getPacketSize() returns the wrong value. do not trust it.
 		/*
 		int bytes = section.getPacketSize();
 		byte[] sectionData = new byte[bytes];
 		*/
 		ByteBuf buffer = Unpooled.buffer();
-		section.toPacket(new PacketByteBuf(buffer));
+		section.write(new FriendlyByteBuf(buffer));
 		byte[] sectionData = new byte[buffer.writerIndex()];
 		buffer.readBytes(sectionData);
 		if (buffer.isReadable()) throw new IllegalStateException("readable: " + buffer.readableBytes());
@@ -121,48 +119,48 @@ public record ChunkSectionLoadPacket(
 			.getBlockEntities()
 			.values()
 			.stream()
-			.filter((BlockEntity blockEntity) -> blockEntity.getPos().getY() >> 4 == sectionY)
+			.filter((BlockEntity blockEntity) -> blockEntity.getBlockPos().getY() >> 4 == sectionY)
 			.map(BlockEntityData::create)
 			.toList()
 		);
-		ChunkNibbleArray skylight = chunk.getWorld().getLightingProvider().get(LightType.SKY).getLightSection(ChunkSectionPos.from(sectionX, sectionY, sectionZ));
-		Optional<byte[]> skylightData = skylight != null ? Optional.of(skylight.asByteArray().clone()) : Optional.empty();
+		DataLayer skylight = chunk.getLevel().getLightEngine().getLayerListener(LightLayer.SKY).getDataLayerData(SectionPos.of(sectionX, sectionY, sectionZ));
+		Optional<byte[]> skylightData = skylight != null ? Optional.of(skylight.getData().clone()) : Optional.empty();
 		ServerPlayNetworking.send(player, new ChunkSectionLoadPacket(sectionX, sectionY, sectionZ, Either.left(sectionData), skylightData, blockEntities));
 	}
 
 	@Override
 	@Environment(EnvType.CLIENT)
 	public void process() {
-		ClientWorld world = MinecraftClient.getInstance().world;
+		ClientLevel world = Minecraft.getInstance().level;
 		if (world == null) return;
-		WorldChunk chunk = (WorldChunk)(world.getChunk(this.sectionX, this.sectionZ, ChunkStatus.FULL, false));
+		LevelChunk chunk = (LevelChunk)(world.getChunk(this.sectionX, this.sectionZ, ChunkStatus.FULL, false));
 		if (chunk == null) return;
-		chunk.getSectionArray()[chunk.sectionCoordToIndex(this.sectionY)] = this.sectionData.right().orElseThrow();
+		chunk.getSections()[chunk.getSectionIndexFromSectionY(this.sectionY)] = this.sectionData.right().orElseThrow();
 		for (BlockEntityData blockEntityData : this.blockEntities) {
-			int x = chunk.getPos().getStartX() | (blockEntityData.packedXZ & 15);
+			int x = chunk.getPos().getMinBlockX() | (blockEntityData.packedXZ & 15);
 			int y = blockEntityData.y;
-			int z = chunk.getPos().getStartZ() | ((blockEntityData.packedXZ >>> 4) & 15);
-			BlockEntity blockEntity = chunk.getBlockEntity(new BlockPos(x, y, z), CreationType.IMMEDIATE);
+			int z = chunk.getPos().getMinBlockZ() | ((blockEntityData.packedXZ >>> 4) & 15);
+			BlockEntity blockEntity = chunk.getBlockEntity(new BlockPos(x, y, z), EntityCreationType.IMMEDIATE);
 			if (blockEntity != null && blockEntityData.nbt != null && blockEntity.getType() == blockEntityData.type) {
 
-				try (Logging logging = new Logging(blockEntity.getReporterContext(), Vertigo.LOGGER)) {
-					blockEntity.read(NbtReadView.create(logging, world.getRegistryManager(), blockEntityData.nbt));
+				try (ScopedCollector logging = new ScopedCollector(blockEntity.problemPath(), Vertigo.LOGGER)) {
+					blockEntity.loadWithComponents(TagValueInput.create(logging, world.registryAccess(), blockEntityData.nbt));
 				}
 			}
 		}
 
-		world.getChunkManager().chunks.refreshSections(chunk);
+		world.getChunkSource().storage.refreshEmptySections(chunk);
 
 		if (this.skylightData.isPresent()) {
-			ChunkSectionPos sectionPos = ChunkSectionPos.from(this.sectionX, this.sectionY, this.sectionZ);
-			world.getLightingProvider().enqueueSectionData(
-				LightType.SKY,
+			SectionPos sectionPos = SectionPos.of(this.sectionX, this.sectionY, this.sectionZ);
+			world.getLightEngine().queueSectionData(
+				LightLayer.SKY,
 				sectionPos,
-				new ChunkNibbleArray(this.skylightData.get().clone())
+				new DataLayer(this.skylightData.get().clone())
 			);
-			world.getLightingProvider().setSectionStatus(sectionPos, this.sectionData.right().orElseThrow().isEmpty());
+			world.getLightEngine().updateSectionStatus(sectionPos, this.sectionData.right().orElseThrow().hasOnlyAir());
 		}
-		world.scheduleBlockRenders(this.sectionX, this.sectionY, this.sectionZ);
+		world.setSectionDirtyWithNeighbors(this.sectionX, this.sectionY, this.sectionZ);
 		VertigoClientEvents.SECTION_LOADED.invoker().onSectionLoaded(this.sectionX, this.sectionY, this.sectionZ);
 	}
 
@@ -170,26 +168,26 @@ public record ChunkSectionLoadPacket(
 		byte packedXZ,
 		int y,
 		BlockEntityType<?> type,
-		@Nullable NbtCompound nbt
+		@Nullable CompoundTag nbt
 	) {
 
-		public static final PacketCodec<RegistryByteBuf, BlockEntityData> PACKET_CODEC = (
-			PacketCodec.tuple(
-				PacketCodecs.BYTE, BlockEntityData::packedXZ,
-				PacketCodecs.INTEGER, BlockEntityData::y,
-				PacketCodecs.registryValue(RegistryKeys.BLOCK_ENTITY_TYPE), BlockEntityData::type,
-				PacketCodecs.nbtCompound(() -> NbtSizeTracker.of(2097152L)), BlockEntityData::nbt,
+		public static final StreamCodec<RegistryFriendlyByteBuf, BlockEntityData> PACKET_CODEC = (
+			StreamCodec.composite(
+				ByteBufCodecs.BYTE, BlockEntityData::packedXZ,
+				ByteBufCodecs.INT, BlockEntityData::y,
+				ByteBufCodecs.registry(Registries.BLOCK_ENTITY_TYPE), BlockEntityData::type,
+				ByteBufCodecs.compoundTagCodec(() -> NbtAccounter.create(2097152L)), BlockEntityData::nbt,
 				BlockEntityData::new
 			)
 		);
 
 		public static BlockEntityData create(BlockEntity blockEntity) {
 			BlockEntityType<?> type = blockEntity.getType();
-			NbtCompound nbt;
+			CompoundTag nbt;
 
-			nbt = blockEntity.toInitialChunkDataNbt(blockEntity.getWorld().getRegistryManager());
+			nbt = blockEntity.getUpdateTag(blockEntity.getLevel().registryAccess());
 
-			BlockPos pos = blockEntity.getPos();
+			BlockPos pos = blockEntity.getBlockPos();
 			int packedXZ = ((pos.getZ() & 15) << 4) | (pos.getX() & 15);
 			int y = pos.getY();
 			return new BlockEntityData((byte)(packedXZ), y, type, nbt);
