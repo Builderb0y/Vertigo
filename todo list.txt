@@ -4,9 +4,11 @@ I think I only have a "vertigo installed" packet registered in one direction and
 	register it in both directions.
 	do this next time I need a packet protocol change.
 
+try to re-use scalable lux code for syncing surface blocks.
+	should help with minimap mods.
+
 mod compatibility:
 
 bugs:
 
 changelog:
-* Port to MC 1.21.11.
