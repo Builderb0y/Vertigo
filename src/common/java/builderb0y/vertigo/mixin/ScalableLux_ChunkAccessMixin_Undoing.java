@@ -26,7 +26,8 @@ public class ScalableLux_ChunkAccessMixin_Undoing {
 			opcode = Opcodes.PUTFIELD
 		)
 	)
-	private void vertigo_dontNull(Chunk chunk, ChunkSkyLight alwaysNull) {}
+	private void vertigo_dontNull(Chunk chunk, ChunkSkyLight alwaysNull) {
+	}
 
 	@TargetHandler(
 		mixin = "ca.spottedleaf.starlight.mixin.common.chunk.ChunkAccessMixin",

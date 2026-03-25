@@ -21,9 +21,11 @@ public class ChunkTrackingManager extends TrackingManager {
 
 	public final LongOpenHashSet loadedChunks = new LongOpenHashSet(256);
 
-	public ChunkTrackingManager() {}
+	public ChunkTrackingManager() {
+	}
 
-	public ChunkTrackingManager(ServerPlayerEntity player) {}
+	public ChunkTrackingManager(ServerPlayerEntity player) {
+	}
 
 	@Override
 	public void clear() {

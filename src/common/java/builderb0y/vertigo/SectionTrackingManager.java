@@ -25,18 +25,27 @@ import builderb0y.vertigo.networking.ChunkSectionUnloadPacket;
 import builderb0y.vertigo.networking.LoadRangePacket;
 import builderb0y.vertigo.networking.SkylightUpdatePacket;
 
-/** used when both sides (client and server) have vertigo installed. */
+/**
+used when both sides (client and server) have vertigo installed.
+*/
 public class SectionTrackingManager extends TrackingManager {
 
-	/** all chunks currently being tracked. */
+	/**
+	all chunks currently being tracked.
+	*/
 	public final Long2ObjectMap<ChunkState> chunkBounds = new Long2ObjectOpenHashMap<>(256);
 	public final LongOpenHashSet skylightUpdates = new LongOpenHashSet();
 	public int previousSectionY, previousViewDistance;
 
-	/** client constructor. */
-	public SectionTrackingManager() {}
+	/**
+	client constructor.
+	*/
+	public SectionTrackingManager() {
+	}
 
-	/** server constructor. */
+	/**
+	server constructor.
+	*/
 	public SectionTrackingManager(ServerPlayerEntity player) {
 		this.previousSectionY = player.getBlockY() >> 4;
 		this.previousViewDistance = VersionUtil.getViewDistance(player);
@@ -75,7 +84,7 @@ public class SectionTrackingManager extends TrackingManager {
 	public void doUpdate(ServerPlayerEntity player) {
 		int playerCenterY = player.getBlockY() >> 4;
 		int range = VersionUtil.getViewDistance(player);
-		for (Iterator<Long2ObjectMap.Entry<ChunkState>> iterator = this.chunkBounds.long2ObjectEntrySet().iterator(); iterator.hasNext();) {
+		for (Iterator<Long2ObjectMap.Entry<ChunkState>> iterator = this.chunkBounds.long2ObjectEntrySet().iterator(); iterator.hasNext(); ) {
 			Long2ObjectMap.Entry<ChunkState> entry = iterator.next();
 			int chunkX = ChunkPos.getPackedX(entry.getLongKey());
 			int chunkZ = ChunkPos.getPackedZ(entry.getLongKey());
@@ -215,12 +224,18 @@ public class SectionTrackingManager extends TrackingManager {
 		}
 	}
 
-	/** information about the chunk that a player sees. */
+	/**
+	information about the chunk that a player sees.
+	*/
 	public static class ChunkState implements LoadedRange {
 
-		/** both inclusive; measured in sections, not blocks. */
+		/**
+		both inclusive; measured in sections, not blocks.
+		*/
 		public int minY, maxY;
-		/** indices where the skylight heightmap has changed since the previous tick. */
+		/**
+		indices where the skylight heightmap has changed since the previous tick.
+		*/
 		public final BitSet skylightMask = new BitSet(256);
 
 		@Override

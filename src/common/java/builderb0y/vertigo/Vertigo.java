@@ -17,16 +17,18 @@ import builderb0y.vertigo.networking.VertigoNetworking;
 public class Vertigo implements ModInitializer {
 
 	public static final String
-		MODID   = "vertigo",
+		MODID = "vertigo",
 		MODNAME = "Vertigo";
 
 	public static final boolean
-		AUDIT        = false,
+		AUDIT = false,
 		PRINT_EVENTS = false;
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(MODNAME);
 
-	/** the current running server. */
+	/**
+	the current running server.
+	*/
 	public static MinecraftServer SERVER;
 
 	@Override

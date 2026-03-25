@@ -12,6 +12,7 @@ import builderb0y.vertigo.VertigoInternals;
 public class ValkyrienSkiesCompat {
 
 	public static final MethodHandle SHIPYARD;
+
 	static {
 		MethodHandle handle;
 		try {

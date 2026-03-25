@@ -2,31 +2,25 @@ package builderb0y.vertigo;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.HeightLimitView;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkSection;
+import net.minecraft.world.chunk.PalettesFactory;
 
 public class VersionUtil {
 
 	public static int getViewDistance(ServerPlayerEntity player) {
-		                           
-			return player.getViewDistance();
-		     
-                                                                  
-        
+
+		return player.getViewDistance();
 	}
 
 	public static ChunkSection newEmptyChunkSection(DynamicRegistryManager registries) {
 		//using an anonymous subclass fixes compatibility with the AntiXray mod.
-		                           
-			return new ChunkSection(net.minecraft.world.chunk.PalettesFactory.fromRegistryManager(registries)) {};
-		                             
-                                                                         
-       
-                                                                  
-        
+
+		return new ChunkSection(PalettesFactory.fromRegistryManager(registries)) {
+
+		};
 	}
 
 	public static int blockMinYInclusive(HeightLimitView view) {
@@ -54,10 +48,7 @@ public class VersionUtil {
 	}
 
 	public static World getWorld(Entity entity) {
-		                           
-			return entity.getEntityWorld();
-		     
-                            
-        
+
+		return entity.getEntityWorld();
 	}
 }

@@ -15,11 +15,9 @@ public class VertigoMixinPlugin implements IMixinConfigPlugin {
 	@Override
 	public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
 		return switch (mixinClassName) {
-			case
-				"builderb0y.vertigo.mixin.ScalableLux_ChunkAccessMixin_Undoing",
+			case "builderb0y.vertigo.mixin.ScalableLux_ChunkAccessMixin_Undoing",
 				"builderb0y.vertigo.mixin.ScalableLux_LevelChunkMixin_Undoing",
-				"builderb0y.vertigo.mixin.ScalableLux_ProtoChunkMixin_Undoing"
-			-> {
+				"builderb0y.vertigo.mixin.ScalableLux_ProtoChunkMixin_Undoing" -> {
 				yield ScalableLuxCompat.scalableLuxInstalled;
 			}
 			default -> true;

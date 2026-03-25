@@ -14,6 +14,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.recipebook.ClientRecipeBook;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.stat.StatHandler;
+import net.minecraft.util.PlayerInput;
 
 import builderb0y.vertigo.TrackingManager;
 
@@ -32,11 +33,9 @@ public class ClientPlayerEntity_CreateTrackingManager extends AbstractClientPlay
 		ClientPlayNetworkHandler networkHandler,
 		StatHandler stats,
 		ClientRecipeBook recipeBook,
-		                           
-			net.minecraft.util.PlayerInput lastPlayerInput,
-		     
-                        
-        
+
+		PlayerInput lastPlayerInput,
+
 		boolean lastSprinting,
 		CallbackInfo callback
 	) {

@@ -26,17 +26,16 @@ public abstract class WorldChunk_SyncSkylight {
 	@Unique
 	private static final boolean VERTIGO_TRACE_THREADS = Boolean.getBoolean("vertigo.traceWrongThreadForSetBlockState");
 
-	@Shadow public abstract World getWorld();
+	@Shadow
+	public abstract World getWorld();
 
 	@Inject(method = "setBlockState", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/light/LightingProvider;checkBlock(Lnet/minecraft/util/math/BlockPos;)V", shift = Shift.AFTER))
 	private void vertigo_syncSkylight(
 		BlockPos pos,
 		BlockState state,
-		                           
-			int flags,
-		     
-                 
-        
+
+		int flags,
+
 		CallbackInfoReturnable<BlockState> callback
 	) {
 		if (this.getWorld() instanceof ServerWorld serverWorld) {
@@ -61,11 +60,9 @@ public abstract class WorldChunk_SyncSkylight {
 	private void vertigo_checkThread(
 		BlockPos pos,
 		BlockState state,
-		                           
-			int flags,
-		     
-                 
-        
+
+		int flags,
+
 		CallbackInfoReturnable<BlockState> callback
 	) {
 		if (VERTIGO_TRACE_THREADS && this.getWorld() instanceof ServerWorld serverWorld && !serverWorld.getServer().isOnThread()) {

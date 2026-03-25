@@ -7,6 +7,7 @@ import builderb0y.vertigo.Vertigo;
 public class ScalableLuxCompat {
 
 	public static final boolean scalableLuxInstalled = FabricLoader.getInstance().isModLoaded("scalablelux");
+
 	static {
 		if (scalableLuxInstalled) {
 			Vertigo.LOGGER.info("ScalableLux is also installed. Enabling compatibility code.");

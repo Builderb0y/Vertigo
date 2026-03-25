@@ -12,7 +12,8 @@ import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.PaletteStorage;
@@ -27,50 +28,25 @@ import builderb0y.vertigo.TrackingManager;
 import builderb0y.vertigo.TrackingManager.LoadedRange;
 import builderb0y.vertigo.VersionUtil;
 import builderb0y.vertigo.Vertigo;
-import builderb0y.vertigo.mixin.ChunkSkyLight_Accessors;
 import builderb0y.vertigo.compat.ScalableLuxCompat;
-
-                           
-	import net.minecraft.network.codec.PacketCodec;
-	import net.minecraft.network.packet.CustomPayload;
-     
-                                                         
-      
+import builderb0y.vertigo.mixin.ChunkSkyLight_Accessors;
 
 public record SkylightUpdatePacket(
 	int chunkX,
 	int chunkZ,
 	IntArrayList skyPositions
 )
-implements VertigoS2CPacket {
+	implements VertigoS2CPacket {
 
 	public static final Identifier PACKET_ID = Vertigo.modID("skylight_update");
 
-	                           
+	public static final PacketCodec<ByteBuf, SkylightUpdatePacket> PACKET_CODEC = PacketCodec.of(SkylightUpdatePacket::write, SkylightUpdatePacket::read);
+	public static final CustomPayload.Id<SkylightUpdatePacket> ID = new CustomPayload.Id<>(PACKET_ID);
 
-		public static final PacketCodec<ByteBuf, SkylightUpdatePacket> PACKET_CODEC = PacketCodec.of(SkylightUpdatePacket::write, SkylightUpdatePacket::read);
-		public static final CustomPayload.Id<SkylightUpdatePacket> ID = new CustomPayload.Id<>(PACKET_ID);
-
-		@Override
-		public Id<? extends CustomPayload> getId() {
-			return ID;
-		}
-
-	     
-
-                                                                                                                       
-
-           
-                                           
-                                 
-   
-
-           
-                                  
-               
-   
-
-       
+	@Override
+	public Id<? extends CustomPayload> getId() {
+		return ID;
+	}
 
 	public static SkylightUpdatePacket read(ByteBuf buffer) {
 		int chunkX = buffer.readInt();
@@ -84,7 +60,7 @@ implements VertigoS2CPacket {
 				buffer.readLong()
 			});
 			skylightPositions = new IntArrayList(bits.cardinality());
-			for (int index = -1; (index = bits.nextSetBit(index + 1)) >= 0;) {
+			for (int index = -1; (index = bits.nextSetBit(index + 1)) >= 0; ) {
 				skylightPositions.add(packSkylightPos(index, buffer.readUnsignedShort()));
 			}
 		}
@@ -145,7 +121,7 @@ implements VertigoS2CPacket {
 		if (chunk == null) return;
 		PaletteStorage palette = ((ChunkSkyLight_Accessors)(chunk.getChunkSkyLight())).vertigo_getPalette();
 		IntArrayList queuedPositions = new IntArrayList(mask.cardinality());
-		for (int index = -1; (index = mask.nextSetBit(index + 1)) >= 0;) {
+		for (int index = -1; (index = mask.nextSetBit(index + 1)) >= 0; ) {
 			queuedPositions.add(packSkylightPos(index, palette.get(index)));
 		}
 		ServerPlayNetworking.send(player, new SkylightUpdatePacket(chunk.getPos().x, chunk.getPos().z, queuedPositions));

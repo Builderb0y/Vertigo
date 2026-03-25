@@ -6,7 +6,9 @@ import net.minecraft.world.chunk.ChunkSection;
 
 public class VertigoInternals {
 
-	/** used by some mixins to keep track of which player a packet is being synced to. */
+	/**
+	used by some mixins to keep track of which player a packet is being synced to.
+	*/
 	public static final ThreadLocal<ServerPlayerEntity> SYNCING_PLAYER = new ThreadLocal<>();
 	/**
 	{@link ChunkDataS2CPacket} sends the entire chunk payload in one big byte[].
