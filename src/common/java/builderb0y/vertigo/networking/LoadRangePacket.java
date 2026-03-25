@@ -18,13 +18,13 @@ import builderb0y.vertigo.SectionTrackingManager;
 import builderb0y.vertigo.SectionTrackingManager.ChunkState;
 import builderb0y.vertigo.api.VertigoClientEvents;
 
-#if MC_VERSION >= MC_1_20_5
+                           
 	import net.minecraft.network.codec.PacketCodec;
 	import net.minecraft.network.codec.PacketCodecs;
 	import net.minecraft.network.packet.CustomPayload;
-#else
-	import net.fabricmc.fabric.api.networking.v1.PacketType;
-#endif
+     
+                                                         
+      
 
 public record LoadRangePacket(
 	int chunkX,
@@ -36,7 +36,7 @@ implements VertigoS2CPacket {
 
 	public static final Identifier PACKET_ID = Vertigo.modID("load_range");
 
-	#if MC_VERSION >= MC_1_20_5
+	                           
 
 		public static final PacketCodec<ByteBuf, LoadRangePacket> PACKET_CODEC = (
 			PacketCodec.tuple(
@@ -55,34 +55,34 @@ implements VertigoS2CPacket {
 			return ID;
 		}
 
-	#else
+	     
 
-		public static final PacketType<LoadRangePacket> TYPE = PacketType.create(PACKET_ID, LoadRangePacket::read);
+                                                                                                             
 
-		public static LoadRangePacket read(PacketByteBuf buffer) {
-			return new LoadRangePacket(
-				buffer.readInt(),
-				buffer.readInt(),
-				buffer.readInt(),
-				buffer.readInt()
-			);
-		}
+                                                            
+                              
+                     
+                     
+                     
+                    
+     
+   
 
-		@Override
-		public void write(PacketByteBuf buffer) {
-			buffer
-			.writeInt(this.chunkX)
-			.writeInt(this.chunkZ)
-			.writeInt(this.minY)
-			.writeInt(this.maxY);
-		}
+           
+                                           
+         
+                         
+                         
+                       
+                        
+   
 
-		@Override
-		public PacketType<?> getType() {
-			return TYPE;
-		}
+           
+                                  
+               
+   
 
-	#endif
+       
 
 	public static void send(ServerPlayerEntity player, int chunkX, int chunkZ, int minY, int maxY) {
 		ServerPlayNetworking.send(player, new LoadRangePacket(chunkX, chunkZ, minY, maxY));

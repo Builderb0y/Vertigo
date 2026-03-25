@@ -9,12 +9,12 @@ import net.minecraft.util.Identifier;
 
 import builderb0y.vertigo.Vertigo;
 
-#if MC_VERSION >= MC_1_20_5
+                           
 	import net.minecraft.network.codec.PacketCodec;
 	import net.minecraft.network.packet.CustomPayload;
-#else
-	import net.fabricmc.fabric.api.networking.v1.PacketType;
-#endif
+     
+                                                         
+      
 
 /**
 this packet never actually gets sent by the client,
@@ -28,7 +28,7 @@ public record VertigoInstalledPacket() implements VertigoC2SPacket {
 
 	public static final Identifier PACKET_ID = Vertigo.modID("vertigo_installed");
 
-	#if MC_VERSION >= MC_1_20_5
+	                           
 
 		public static final PacketCodec<ByteBuf, VertigoInstalledPacket> PACKET_CODEC = (
 			PacketCodec.unit(new VertigoInstalledPacket())
@@ -41,23 +41,23 @@ public record VertigoInstalledPacket() implements VertigoC2SPacket {
 			return ID;
 		}
 
-	#else
+	     
 
-		public static final PacketType<VertigoInstalledPacket> TYPE = PacketType.create(PACKET_ID, VertigoInstalledPacket::read);
+                                                                                                                           
 
-		public static VertigoInstalledPacket read(PacketByteBuf buffer) {
-			return new VertigoInstalledPacket();
-		}
+                                                                   
+                                       
+   
 
-		@Override
-		public void write(PacketByteBuf buffer) {}
+           
+                                            
 
-		@Override
-		public PacketType<?> getType() {
-			return TYPE;
-		}
+           
+                                  
+               
+   
 
-	#endif
+       
 
 	@Override
 	@Environment(EnvType.CLIENT)

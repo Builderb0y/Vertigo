@@ -32,11 +32,11 @@ public abstract class WorldChunk_SyncSkylight {
 	private void vertigo_syncSkylight(
 		BlockPos pos,
 		BlockState state,
-		#if MC_VERSION >= MC_1_21_5
+		                           
 			int flags,
-		#else
-			boolean moved,
-		#endif
+		     
+                 
+        
 		CallbackInfoReturnable<BlockState> callback
 	) {
 		if (this.getWorld() instanceof ServerWorld serverWorld) {
@@ -61,11 +61,11 @@ public abstract class WorldChunk_SyncSkylight {
 	private void vertigo_checkThread(
 		BlockPos pos,
 		BlockState state,
-		#if MC_VERSION >= MC_1_21_5
+		                           
 			int flags,
-		#else
-			boolean moved,
-		#endif
+		     
+                 
+        
 		CallbackInfoReturnable<BlockState> callback
 	) {
 		if (VERTIGO_TRACE_THREADS && this.getWorld() instanceof ServerWorld serverWorld && !serverWorld.getServer().isOnThread()) {

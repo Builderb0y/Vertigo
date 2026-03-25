@@ -30,12 +30,12 @@ import builderb0y.vertigo.Vertigo;
 import builderb0y.vertigo.mixin.ChunkSkyLight_Accessors;
 import builderb0y.vertigo.compat.ScalableLuxCompat;
 
-#if MC_VERSION >= MC_1_20_5
+                           
 	import net.minecraft.network.codec.PacketCodec;
 	import net.minecraft.network.packet.CustomPayload;
-#else
-	import net.fabricmc.fabric.api.networking.v1.PacketType;
-#endif
+     
+                                                         
+      
 
 public record SkylightUpdatePacket(
 	int chunkX,
@@ -46,7 +46,7 @@ implements VertigoS2CPacket {
 
 	public static final Identifier PACKET_ID = Vertigo.modID("skylight_update");
 
-	#if MC_VERSION >= MC_1_20_5
+	                           
 
 		public static final PacketCodec<ByteBuf, SkylightUpdatePacket> PACKET_CODEC = PacketCodec.of(SkylightUpdatePacket::write, SkylightUpdatePacket::read);
 		public static final CustomPayload.Id<SkylightUpdatePacket> ID = new CustomPayload.Id<>(PACKET_ID);
@@ -56,21 +56,21 @@ implements VertigoS2CPacket {
 			return ID;
 		}
 
-	#else
+	     
 
-		public static final PacketType<SkylightUpdatePacket> TYPE = PacketType.create(PACKET_ID, SkylightUpdatePacket::read);
+                                                                                                                       
 
-		@Override
-		public void write(PacketByteBuf buffer) {
-			this.write((ByteBuf)(buffer));
-		}
+           
+                                           
+                                 
+   
 
-		@Override
-		public PacketType<?> getType() {
-			return TYPE;
-		}
+           
+                                  
+               
+   
 
-	#endif
+       
 
 	public static SkylightUpdatePacket read(ByteBuf buffer) {
 		int chunkX = buffer.readInt();

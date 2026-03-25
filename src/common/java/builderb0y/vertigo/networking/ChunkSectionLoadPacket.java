@@ -37,15 +37,15 @@ import builderb0y.vertigo.VersionUtil;
 import builderb0y.vertigo.Vertigo;
 import builderb0y.vertigo.api.VertigoClientEvents;
 
-#if MC_VERSION >= MC_1_20_5
+                           
 	import net.minecraft.nbt.NbtSizeTracker;
 	import net.minecraft.network.RegistryByteBuf;
 	import net.minecraft.network.codec.PacketCodec;
 	import net.minecraft.network.codec.PacketCodecs;
 	import net.minecraft.network.packet.CustomPayload;
-#else
-	import net.fabricmc.fabric.api.networking.v1.PacketType;
-#endif
+     
+                                                         
+      
 
 /**
 mostly a modified version of {@link ChunkDataS2CPacket} and
@@ -67,7 +67,7 @@ implements VertigoS2CPacket {
 
 	public static final Identifier PACKET_ID = Vertigo.modID("section_load");
 
-	#if MC_VERSION >= MC_1_20_5
+	                           
 
 		public static final PacketCodec<RegistryByteBuf, ChunkSectionLoadPacket> PACKET_CODEC = (
 			PacketCodec.tuple(
@@ -108,54 +108,54 @@ implements VertigoS2CPacket {
 			return ID;
 		}
 
-	#else
+	     
 
-		public static final PacketType<ChunkSectionLoadPacket> TYPE = PacketType.create(PACKET_ID, ChunkSectionLoadPacket::read);
+                                                                                                                           
 
-		public static ChunkSectionLoadPacket read(PacketByteBuf buffer) {
-			int sectionX = buffer.readInt();
-			int sectionY = buffer.readInt();
-			int sectionZ = buffer.readInt();
-			ChunkSection section = VersionUtil.newEmptyChunkSection(MinecraftClient.getInstance().world.getRegistryManager());
-			section.readDataPacket(buffer);
-			Optional<byte[]> skylightData;
-			if (buffer.readBoolean()) {
-				skylightData = Optional.of(new byte[2048]);
-				buffer.readBytes(skylightData.get());
-			}
-			else {
-				skylightData = Optional.empty();
-			}
-			int blockEntityCount = buffer.readVarInt();
-			ArrayList<BlockEntityData> blockEntities = new ArrayList<>(blockEntityCount);
-			for (int index = 0; index < blockEntityCount; index++) {
-				blockEntities.add(BlockEntityData.read(buffer));
-			}
-			return new ChunkSectionLoadPacket(sectionX, sectionY, sectionZ, Either.right(section), skylightData, blockEntities);
-		}
+                                                                   
+                                   
+                                   
+                                   
+                                                                                                                     
+                                  
+                                 
+                              
+                                               
+                                         
+    
+         
+                                    
+    
+                                              
+                                                                                
+                                                           
+                                                    
+    
+                                                                                                                       
+   
 
-		@Override
-		public void write(PacketByteBuf buffer) {
-			buffer
-			.writeInt(this.sectionX)
-			.writeInt(this.sectionY)
-			.writeInt(this.sectionZ);
-			buffer
-			.writeBytes(this.sectionData.left().orElseThrow())
-			.writeBoolean(this.skylightData.isPresent());
-			if (this.skylightData.isPresent()) buffer.writeBytes(this.skylightData.get());
-			buffer.writeVarInt(this.blockEntities.size());
-			for (BlockEntityData data : this.blockEntities) {
-				data.write(buffer);
-			}
-		}
+           
+                                           
+         
+                           
+                           
+                            
+         
+                                                     
+                                                
+                                                                                 
+                                                 
+                                                    
+                       
+    
+   
 
-		@Override
-		public PacketType<?> getType() {
-			return TYPE;
-		}
+           
+                                  
+               
+   
 
-	#endif
+       
 
 	public static void send(ServerPlayerEntity player, WorldChunk chunk, int sectionY) {
 		int sectionX = chunk.getPos().x;
@@ -200,25 +200,25 @@ implements VertigoS2CPacket {
 			int z = chunk.getPos().getStartZ() | ((blockEntityData.packedXZ >>> 4) & 15);
 			BlockEntity blockEntity = chunk.getBlockEntity(new BlockPos(x, y, z), CreationType.IMMEDIATE);
 			if (blockEntity != null && blockEntityData.nbt != null && blockEntity.getType() == blockEntityData.type) {
-				#if MC_VERSION >= MC_1_21_6
+				                           
 					try (net.minecraft.util.ErrorReporter.Logging logging = new net.minecraft.util.ErrorReporter.Logging(blockEntity.getReporterContext(), Vertigo.LOGGER)) {
 						blockEntity.read(net.minecraft.storage.NbtReadView.create(logging, world.getRegistryManager(), blockEntityData.nbt));
 					}
-				#elif MC_VERSION >= MC_1_20_5
-					blockEntity.read(blockEntityData.nbt, world.getRegistryManager());
-				#else
-					blockEntity.readNbt(blockEntityData.nbt);
-				#endif
+				                             
+                                                                       
+         
+                                              
+          
 			}
 		}
-		#if MC_VERSION >= MC_1_21_4
+		                           
 			world.getChunkManager().chunks.refreshSections(chunk);
-		#elif MC_VERSION >= MC_1_21_2
-			//if I'm reading minecraft's code correctly, I should provide true here,
-			//but that breaks things, and false works flawlessly.
-			//I do not understand why.
-			world.getChunkManager().chunks.onSectionStatusChanged(this.sectionX, this.sectionY, this.sectionZ, false);
-		#endif
+		                             
+                                                                           
+                                                        
+                             
+                                                                                                             
+        
 		if (this.skylightData.isPresent()) {
 			ChunkSectionPos sectionPos = ChunkSectionPos.from(this.sectionX, this.sectionY, this.sectionZ);
 			world.getLightingProvider().enqueueSectionData(
@@ -239,7 +239,7 @@ implements VertigoS2CPacket {
 		@Nullable NbtCompound nbt
 	) {
 
-		#if MC_VERSION >= MC_1_20_5
+		                           
 
 			public static final PacketCodec<RegistryByteBuf, BlockEntityData> PACKET_CODEC = (
 				PacketCodec.tuple(
@@ -251,33 +251,33 @@ implements VertigoS2CPacket {
 				)
 			);
 
-		#else
+		     
 
-			public static BlockEntityData read(PacketByteBuf buffer) {
-				return new BlockEntityData(
-					buffer.readByte(),
-					buffer.readInt(),
-					buffer.readRegistryValue(Registries.BLOCK_ENTITY_TYPE),
-					buffer.readNbt()
-				);
-			}
+                                                             
+                               
+                       
+                      
+                                                            
+                     
+      
+    
 
-			public void write(PacketByteBuf buffer) {
-				buffer.writeByte(this.packedXZ).writeInt(this.y);
-				buffer.writeRegistryValue(Registries.BLOCK_ENTITY_TYPE, this.type);
-				buffer.writeNbt(this.nbt);
-			}
+                                            
+                                                     
+                                                                       
+                              
+    
 
-		#endif
+        
 
 		public static BlockEntityData create(BlockEntity blockEntity) {
 			BlockEntityType<?> type = blockEntity.getType();
 			NbtCompound nbt;
-			#if MC_VERSION >= MC_1_20_5
+			                           
 				nbt = blockEntity.toInitialChunkDataNbt(blockEntity.getWorld().getRegistryManager());
-			#else
-				nbt = blockEntity.toInitialChunkDataNbt();
-			#endif
+			     
+                                              
+         
 			BlockPos pos = blockEntity.getPos();
 			int packedXZ = ((pos.getZ() & 15) << 4) | (pos.getX() & 15);
 			int y = pos.getY();

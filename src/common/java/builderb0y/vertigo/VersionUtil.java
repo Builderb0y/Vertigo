@@ -11,22 +11,22 @@ import net.minecraft.world.chunk.ChunkSection;
 public class VersionUtil {
 
 	public static int getViewDistance(ServerPlayerEntity player) {
-		#if MC_VERSION >= MC_1_20_2
+		                           
 			return player.getViewDistance();
-		#else
-			return player.getServer().getPlayerManager().getViewDistance();
-		#endif
+		     
+                                                                  
+        
 	}
 
 	public static ChunkSection newEmptyChunkSection(DynamicRegistryManager registries) {
 		//using an anonymous subclass fixes compatibility with the AntiXray mod.
-		#if MC_VERSION >= MC_1_21_9
+		                           
 			return new ChunkSection(net.minecraft.world.chunk.PalettesFactory.fromRegistryManager(registries)) {};
-		#elif MC_VERSION >= MC_1_21_2
-			return new ChunkSection(registries.getOrThrow(RegistryKeys.BIOME)) {};
-		#else
-			return new ChunkSection(registries.get(RegistryKeys.BIOME)) {};
-		#endif
+		                             
+                                                                         
+       
+                                                                  
+        
 	}
 
 	public static int blockMinYInclusive(HeightLimitView view) {
@@ -54,10 +54,10 @@ public class VersionUtil {
 	}
 
 	public static World getWorld(Entity entity) {
-		#if MC_VERSION >= MC_1_21_9
+		                           
 			return entity.getEntityWorld();
-		#else
-			return entity.getWorld();
-		#endif
+		     
+                            
+        
 	}
 }

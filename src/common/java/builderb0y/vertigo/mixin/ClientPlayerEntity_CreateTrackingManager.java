@@ -32,11 +32,11 @@ public class ClientPlayerEntity_CreateTrackingManager extends AbstractClientPlay
 		ClientPlayNetworkHandler networkHandler,
 		StatHandler stats,
 		ClientRecipeBook recipeBook,
-		#if MC_VERSION >= MC_1_21_6
+		                           
 			net.minecraft.util.PlayerInput lastPlayerInput,
-		#else
-			boolean lastSneaking,
-		#endif
+		     
+                        
+        
 		boolean lastSprinting,
 		CallbackInfo callback
 	) {
