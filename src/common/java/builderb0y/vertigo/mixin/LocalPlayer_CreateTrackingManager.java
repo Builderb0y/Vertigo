@@ -6,6 +6,7 @@ import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.chat.ChatAbilities;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.stats.StatsCounter;
@@ -16,25 +17,24 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import builderb0y.vertigo.TrackingManager;
 
-@Environment(EnvType.CLIENT)
 @Mixin(LocalPlayer.class)
-public class ClientPlayerEntity_CreateTrackingManager extends AbstractClientPlayer {
+@Environment(EnvType.CLIENT)
+public class LocalPlayer_CreateTrackingManager extends AbstractClientPlayer {
 
-	public ClientPlayerEntity_CreateTrackingManager() {
+	public LocalPlayer_CreateTrackingManager() {
 		super(null, null);
 	}
 
 	@Inject(method = "<init>", at = @At("RETURN"))
 	private void vertigo_createTrackingManager(
-		Minecraft client,
-		ClientLevel world,
-		ClientPacketListener networkHandler,
+		Minecraft minecraft,
+		ClientLevel level,
+		ClientPacketListener connection,
 		StatsCounter stats,
 		ClientRecipeBook recipeBook,
-
-		Input lastPlayerInput,
-
-		boolean lastSprinting,
+		Input lastSentInput,
+		boolean wasSprinting,
+		ChatAbilities chatAbilities,
 		CallbackInfo callback
 	) {
 		TrackingManager.set(this, TrackingManager.createClient());

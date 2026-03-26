@@ -18,7 +18,7 @@ import builderb0y.vertigo.TrackingManager;
 import builderb0y.vertigo.Vertigo;
 
 @Mixin(value = LevelChunk.class, priority = 500) //before scalable lux.
-public abstract class WorldChunk_SyncSkylight {
+public abstract class LevelChunk_SyncSkylight {
 
 	@Unique
 	private static final boolean VERTIGO_TRACE_THREADS = Boolean.getBoolean("vertigo.traceWrongThreadForSetBlockState");

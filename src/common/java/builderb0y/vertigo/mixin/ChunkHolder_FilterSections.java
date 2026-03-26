@@ -41,9 +41,9 @@ public class ChunkHolder_FilterSections {
 			if (
 				VertigoAPI.isSectionLoaded(
 					player,
-					chunk.getPos().x,
+					chunk.getPos().x(),
 					chunk.getSectionYFromSectionIndex(index),
-					chunk.getPos().z
+					chunk.getPos().z()
 				)
 			) {
 				if (newList == null) newList = new ArrayList<>(toFilter.size());

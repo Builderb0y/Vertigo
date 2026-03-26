@@ -29,12 +29,12 @@ public class ChunkDataSender_TrackPlayer {
 	private static void vertigo_unmarkPlayer(ServerGamePacketListenerImpl handler, ServerLevel world, LevelChunk chunk, CallbackInfo callback) {
 		VertigoInternals.SYNCING_PLAYER.set(null);
 		TrackingManager manager = TrackingManager.getOrCreate(handler.player);
-		manager.onChunkLoaded(handler.player, chunk.getPos().x, chunk.getPos().z);
+		manager.onChunkLoaded(handler.player, chunk.getPos().x(), chunk.getPos().z());
 	}
 
-	@Inject(method = "dropChunk", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;sendPacket(Lnet/minecraft/network/protocol/Packet;)V", shift = Shift.AFTER))
+	@Inject(method = "dropChunk", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;send(Lnet/minecraft/network/protocol/Packet;)V", shift = Shift.AFTER))
 	private void vertigo_onUnload(ServerPlayer player, ChunkPos pos, CallbackInfo callback) {
 		TrackingManager manager = TrackingManager.get(player);
-		if (manager != null) manager.onChunkUnloaded(player, pos.x, pos.z);
+		if (manager != null) manager.onChunkUnloaded(player, pos.x(), pos.z());
 	}
 }

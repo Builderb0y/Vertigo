@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(ChunkSkyLightSources.class)
-public interface ChunkSkyLight_Accessors {
+public interface ChunkSkyLightSources_Accessors {
 
 	@Accessor("minY")
 	public abstract int vertigo_getMinY();

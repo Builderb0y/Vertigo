@@ -27,7 +27,7 @@ import builderb0y.vertigo.TrackingManager.LoadedRange;
 import builderb0y.vertigo.VersionUtil;
 import builderb0y.vertigo.Vertigo;
 import builderb0y.vertigo.compat.ScalableLuxCompat;
-import builderb0y.vertigo.mixin.ChunkSkyLight_Accessors;
+import builderb0y.vertigo.mixin.ChunkSkyLightSources_Accessors;
 
 public record SkylightUpdatePacket(
 	int chunkX,
@@ -117,12 +117,12 @@ public record SkylightUpdatePacket(
 	public static void send(ServerPlayer player, int chunkX, int chunkZ, BitSet mask) {
 		LevelChunk chunk = (LevelChunk)(VersionUtil.getWorld(player).getChunk(chunkX, chunkZ, ChunkStatus.FULL, false));
 		if (chunk == null) return;
-		BitStorage palette = ((ChunkSkyLight_Accessors)(chunk.getSkyLightSources())).vertigo_getPalette();
+		BitStorage palette = ((ChunkSkyLightSources_Accessors)(chunk.getSkyLightSources())).vertigo_getPalette();
 		IntArrayList queuedPositions = new IntArrayList(mask.cardinality());
 		for (int index = -1; (index = mask.nextSetBit(index + 1)) >= 0; ) {
 			queuedPositions.add(packSkylightPos(index, palette.get(index)));
 		}
-		ServerPlayNetworking.send(player, new SkylightUpdatePacket(chunk.getPos().x, chunk.getPos().z, queuedPositions));
+		ServerPlayNetworking.send(player, new SkylightUpdatePacket(chunk.getPos().x(), chunk.getPos().z(), queuedPositions));
 	}
 
 	@Override
@@ -139,7 +139,7 @@ public record SkylightUpdatePacket(
 		LevelChunk chunk = (LevelChunk)(world.getChunk(this.chunkX, this.chunkZ, ChunkStatus.FULL, false));
 		if (chunk == null) return;
 		ChunkSkyLightSources skylight = chunk.getSkyLightSources();
-		ChunkSkyLight_Accessors accessors = (ChunkSkyLight_Accessors)(skylight);
+		ChunkSkyLightSources_Accessors accessors = (ChunkSkyLightSources_Accessors)(skylight);
 		LayerLightEventListener lighting = world.getLightEngine().getLayerListener(LightLayer.SKY);
 		BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
 		int chunkMinY = accessors.vertigo_getMinY();

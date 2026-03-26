@@ -100,8 +100,8 @@ public record ChunkSectionLoadPacket(
 	}
 
 	public static void send(ServerPlayer player, LevelChunk chunk, int sectionY) {
-		int sectionX = chunk.getPos().x;
-		int sectionZ = chunk.getPos().z;
+		int sectionX = chunk.getPos().x();
+		int sectionZ = chunk.getPos().z();
 		LevelChunkSection section = chunk.getSection(chunk.getSectionIndexFromSectionY(sectionY));
 		//section.getPacketSize() returns the wrong value. do not trust it.
 		/*

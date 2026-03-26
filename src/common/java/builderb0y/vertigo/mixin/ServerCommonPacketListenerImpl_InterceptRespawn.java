@@ -1,10 +1,11 @@
 package builderb0y.vertigo.mixin;
 
-import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundRespawnPacket;
 import net.minecraft.server.network.ServerCommonPacketListenerImpl;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityLevelChangeEvents;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Coerce;
@@ -13,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import builderb0y.vertigo.TrackingManager;
 
 /**
-{@link ServerEntityWorldChangeEvents#AFTER_PLAYER_CHANGE_WORLD}
+{@link ServerEntityLevelChangeEvents#AFTER_PLAYER_CHANGE_LEVEL}
 fires after all the chunks have been sent, but I need to be
 notified before this happens so that old chunks can be
 cleared from the tracker BEFORE new chunks are added to it.
@@ -25,7 +26,7 @@ but one thing they have in common is that all
 so, that's what I handle here.
 */
 @Mixin(ServerCommonPacketListenerImpl.class)
-public class ServerCommonNetworkHandler_InterceptRespawn {
+public class ServerCommonPacketListenerImpl_InterceptRespawn {
 
 	@Inject(method = "send(Lnet/minecraft/network/protocol/Packet;Lio/netty/channel/ChannelFutureListener;)V", at = @At("HEAD"))
 	private void vertigo_interceptRespawn(

@@ -8,7 +8,7 @@ import builderb0y.vertigo.TrackingManager.TrackingManagerHolder;
 import net.minecraft.world.entity.player.Player;
 
 @Mixin(Player.class)
-public class PlayerEntity_HoldTrackingManager implements TrackingManagerHolder {
+public class Player_HoldTrackingManager implements TrackingManagerHolder {
 
 	@Unique
 	private TrackingManager vertigo_trackingManager;

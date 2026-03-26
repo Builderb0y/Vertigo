@@ -32,12 +32,12 @@ public class ChunkTrackingManager extends TrackingManager {
 
 	@Override
 	public boolean isLoaded(int sectionX, int sectionY, int sectionZ) {
-		return this.loadedChunks.contains(ChunkPos.asLong(sectionX, sectionZ));
+		return this.loadedChunks.contains(ChunkPos.pack(sectionX, sectionZ));
 	}
 
 	@Override
 	public @Nullable LoadedRange getLoadedRange(int chunkX, int chunkZ) {
-		boolean loaded = this.loadedChunks.contains(ChunkPos.asLong(chunkX, chunkZ));
+		boolean loaded = this.loadedChunks.contains(ChunkPos.pack(chunkX, chunkZ));
 		return loaded ? (int sectionY) -> true : null;
 	}
 
@@ -48,7 +48,7 @@ public class ChunkTrackingManager extends TrackingManager {
 
 	@Override
 	public void onChunkLoaded(ServerPlayer player, int chunkX, int chunkZ) {
-		this.loadedChunks.add(ChunkPos.asLong(chunkX, chunkZ));
+		this.loadedChunks.add(ChunkPos.pack(chunkX, chunkZ));
 		int minSection = VersionUtil.sectionMinYInclusive(VersionUtil.getWorld(player));
 		int maxSection = VersionUtil.sectionMaxYExclusive(VersionUtil.getWorld(player));
 		for (int sectionY = minSection; sectionY < maxSection; sectionY++) {
@@ -58,7 +58,7 @@ public class ChunkTrackingManager extends TrackingManager {
 
 	@Override
 	public void onChunkUnloaded(ServerPlayer player, int chunkX, int chunkZ) {
-		this.loadedChunks.remove(ChunkPos.asLong(chunkX, chunkZ));
+		this.loadedChunks.remove(ChunkPos.pack(chunkX, chunkZ));
 		int minSection = VersionUtil.sectionMinYInclusive(VersionUtil.getWorld(player));
 		int maxSection = VersionUtil.sectionMaxYExclusive(VersionUtil.getWorld(player));
 		for (int sectionY = minSection; sectionY < maxSection; sectionY++) {
@@ -69,22 +69,22 @@ public class ChunkTrackingManager extends TrackingManager {
 	@Override
 	@Environment(EnvType.CLIENT)
 	public void onChunkLoadedClient(LevelChunk chunk) {
-		this.loadedChunks.add(chunk.getPos().toLong());
+		this.loadedChunks.add(chunk.getPos().pack());
 		int minSection = VersionUtil.sectionMinYInclusive(chunk);
 		int maxSection = VersionUtil.sectionMaxYExclusive(chunk);
 		for (int sectionY = minSection; sectionY < maxSection; sectionY++) {
-			VertigoClientEvents.SECTION_LOADED.invoker().onSectionLoaded(chunk.getPos().x, sectionY, chunk.getPos().z);
+			VertigoClientEvents.SECTION_LOADED.invoker().onSectionLoaded(chunk.getPos().x(), sectionY, chunk.getPos().z());
 		}
 	}
 
 	@Override
 	@Environment(EnvType.CLIENT)
 	public void onChunkUnloadedClient(LevelChunk chunk) {
-		this.loadedChunks.remove(chunk.getPos().toLong());
+		this.loadedChunks.remove(chunk.getPos().pack());
 		int minSection = VersionUtil.sectionMinYInclusive(chunk);
 		int maxSection = VersionUtil.sectionMaxYExclusive(chunk);
 		for (int sectionY = minSection; sectionY < maxSection; sectionY++) {
-			VertigoClientEvents.SECTION_UNLOADED.invoker().onSectionUnloaded(chunk.getPos().x, sectionY, chunk.getPos().z);
+			VertigoClientEvents.SECTION_UNLOADED.invoker().onSectionUnloaded(chunk.getPos().x(), sectionY, chunk.getPos().z());
 		}
 	}
 

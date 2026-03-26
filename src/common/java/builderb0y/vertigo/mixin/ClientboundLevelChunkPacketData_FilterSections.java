@@ -19,7 +19,7 @@ import builderb0y.vertigo.VertigoInternals;
 import builderb0y.vertigo.compat.ValkyrienSkiesCompat;
 
 @Mixin(ClientboundLevelChunkPacketData.class)
-public class ChunkData_FilterSections {
+public class ClientboundLevelChunkPacketData_FilterSections {
 
 	@ModifyReceiver(method = "calculateChunkSize", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/chunk/LevelChunkSection;getSerializedSize()I"))
 	private static LevelChunkSection vertigo_modifySize(LevelChunkSection section, @Local(index = 4) int index, @Local(argsOnly = true) LevelChunk chunk) {

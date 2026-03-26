@@ -59,7 +59,7 @@ public record LoadRangePacket(
 		LocalPlayer player = Minecraft.getInstance().player;
 		if (player == null) return;
 		if (!(TrackingManager.get(player) instanceof SectionTrackingManager manager)) return;
-		long chunkPos = ChunkPos.asLong(this.chunkX, this.chunkZ);
+		long chunkPos = ChunkPos.pack(this.chunkX, this.chunkZ);
 		if (this.maxY >= this.minY) {
 			ChunkState bound = manager.chunkBounds.get(chunkPos);
 			if (bound != null) {
