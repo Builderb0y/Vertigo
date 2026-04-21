@@ -40,7 +40,10 @@ public class ChunkHolder_FilterSections {
 		@Local(index = 4) int index
 	) {
 		List<ServerPlayerEntity> toFilter = original.get();
-		if (toFilter.isEmpty()) return toFilter;
+		//class check fixes compatibility with sable,
+		//since it uses a subclass,
+		//and we don't want to mess with its subclass.
+		if (toFilter.isEmpty() || ((Class)(this.getClass())) != ((Class)(ChunkHolder.class))) return toFilter;
 		List<ServerPlayerEntity> newList = null;
 		for (ServerPlayerEntity player : toFilter) {
 			if (
