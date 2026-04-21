@@ -1,14 +1,12 @@
 package builderb0y.vertigo.mixin;
 
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Coerce;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import net.minecraft.network.PacketCallbacks;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.PlayerRespawnS2CPacket;
 import net.minecraft.server.network.ServerCommonNetworkHandler;
@@ -31,7 +29,14 @@ so, that's what I handle here.
 @Mixin(ServerCommonNetworkHandler.class)
 public class ServerCommonNetworkHandler_InterceptRespawn {
 
-	@Inject(method = "send", at = @At("HEAD"))
+	@Inject(
+		#if MC_VERSION >= MC_1_21_6
+			method = "Lnet/minecraft/server/network/ServerCommonNetworkHandler;send(Lnet/minecraft/network/packet/Packet;Lio/netty/channel/ChannelFutureListener;)V",
+		#else
+			method = "Lnet/minecraft/server/network/ServerCommonNetworkHandler;send(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/PacketCallbacks;)V",
+		#endif
+		at = @At("HEAD")
+	)
 	private void vertigo_interceptRespawn(
 		Packet<?> packet,
 		/** different class in 1.21.6+ compared to 1.21.5- */
