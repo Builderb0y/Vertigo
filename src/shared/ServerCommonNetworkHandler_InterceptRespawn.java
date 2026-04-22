@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Coerce;
+import org.spongepowered.asm.mixin.injection.Desc;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
@@ -30,17 +31,28 @@ so, that's what I handle here.
 public class ServerCommonNetworkHandler_InterceptRespawn {
 
 	@Inject(
-		#if MC_VERSION >= MC_1_21_6
-			method = "Lnet/minecraft/server/network/ServerCommonNetworkHandler;send(Lnet/minecraft/network/packet/Packet;Lio/netty/channel/ChannelFutureListener;)V",
-		#else
-			method = "Lnet/minecraft/server/network/ServerCommonNetworkHandler;send(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/PacketCallbacks;)V",
-		#endif
+		target = @Desc(
+			owner = ServerCommonNetworkHandler.class,
+			value = "send",
+			ret = void.class,
+			args = {
+				Packet.class,
+				#if MC_VERSION >= MC_1_21_6
+					io.netty.channel.ChannelFutureListener.class
+				#else
+					net.minecraft.network.PacketCallbacks.class
+				#endif
+			}
+		),
 		at = @At("HEAD")
 	)
 	private void vertigo_interceptRespawn(
 		Packet<?> packet,
-		/** different class in 1.21.6+ compared to 1.21.5- */
-		@Coerce Object callbacks,
+		#if MC_VERSION >= MC_1_21_6
+			io.netty.channel.ChannelFutureListener listener,
+		#else
+			net.minecraft.network.PacketCallbacks listerner,
+		#endif
 		CallbackInfo callback
 	) {
 		if (((Object)(this)) instanceof ServerPlayNetworkHandler handler && packet instanceof PlayerRespawnS2CPacket) {
