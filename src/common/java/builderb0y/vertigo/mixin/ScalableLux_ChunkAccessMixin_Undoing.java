@@ -21,12 +21,11 @@ public class ScalableLux_ChunkAccessMixin_Undoing {
 		method = "@MixinSquared:Handler",
 		at = @At(
 			value = "FIELD",
-			target = "Lnet/minecraft/world/chunk/Chunk;chunkSkyLight:Lnet/minecraft/world/chunk/light/ChunkSkyLight;",
+			target = "Lnet/minecraft/world/level/chunk/ChunkAccess;skyLightSources:Lnet/minecraft/world/level/lighting/ChunkSkyLightSources;",
 			opcode = Opcodes.PUTFIELD
 		)
 	)
-	private void vertigo_dontNull(ChunkAccess chunk, ChunkSkyLightSources alwaysNull) {
-	}
+	private void vertigo_dontNull(ChunkAccess chunk, ChunkSkyLightSources alwaysNull) {}
 
 	@TargetHandler(
 		mixin = "ca.spottedleaf.starlight.mixin.common.chunk.ChunkAccessMixin",

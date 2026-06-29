@@ -259,7 +259,7 @@ tasks.register("Currently V$project.version for MC $project.minecraft_version") 
 }
 
 for (Version version in [
-	new Version(26, 1, 0),
+	new Version(26, 1, 2),
 ]) {
 	Version capturedVersion = version
 	tasks.register("Switch to ${capturedVersion.longhand()}", WriteProperties) {
