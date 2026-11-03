@@ -19,8 +19,8 @@ public class Vertigo implements ModInitializer {
 		MODNAME = "Vertigo";
 
 	public static final boolean
-		AUDIT = false,
-		PRINT_EVENTS = false;
+		AUDIT = Boolean.getBoolean(MODID + ".mixinAudit"),
+		PRINT_EVENTS = Boolean.getBoolean(MODID + ".logEvents");
 
 	public static final Logger LOGGER = LoggerFactory.getLogger(MODNAME);
 

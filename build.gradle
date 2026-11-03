@@ -113,8 +113,27 @@ dependencies() {
 
 loom() {
 	accessWidenerPath = file("src/${project.minecraft_version}/resources/vertigo.accesswidener")
+	//first loom broke my existing run configurations by migrating them to gradle incorrectly,
+	//and now loom broke logging when not running with gradle.
+	//my current workaround is to go ahead and use gradle to launch,
+	//but copy intellij's JVM arguments since *apparently* that's not automatic.
+	/*
 	runs.configureEach() {
 		preferGradleTask = false
+	}
+	*/
+	List<String> newArgs = (
+		System
+		.getProperties()
+		.entrySet()
+		.stream()
+		.filter(entry -> entry.key.startsWith("fwd_"))
+		.map(entry -> "-D${entry.key.substring(4)}=${entry.value}")
+		.toList()
+	);
+	println(newArgs)
+	runs.configureEach() {
+		jvmArguments.addAll(newArgs)
 	}
 }
 
@@ -263,6 +282,7 @@ tasks.register("Currently V$project.version for MC $project.minecraft_version") 
 
 for (Version version in [
 	new Version(26, 1, 2),
+	new Version(26, 2, 0),
 ]) {
 	Version capturedVersion = version
 	tasks.register("Switch to ${capturedVersion.longhand()}", WriteProperties) {
