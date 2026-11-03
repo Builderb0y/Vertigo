@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export JAVA_HOME=/home/builderb0y/java/jdk-21.0.4+7/;
+export JAVA_HOME=/home/builderb0y/java/jdk-25.0.5+8/;
 
 ./gradlew "Switch to 1.20.1" && ./gradlew build && \
 ./gradlew "Switch to 1.20.2" && ./gradlew build && \
