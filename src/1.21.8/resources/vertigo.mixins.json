@@ -12,6 +12,7 @@
 		"PlayerEntity_HoldTrackingManager",
 		"PlayerLookup_AutomaticCompatibility",
 		"ScalableLux_ChunkAccessMixin_Undoing",
+		"ScalableLux_ChunkAccessMixin_Undoing_New",
 		"ScalableLux_LevelChunkMixin_Undoing",
 		"ScalableLux_ProtoChunkMixin_Undoing",
 		"ServerCommonNetworkHandler_InterceptRespawn",

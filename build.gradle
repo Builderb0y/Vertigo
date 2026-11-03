@@ -4,7 +4,7 @@ import java.util.jar.JarEntry
 import java.util.jar.JarFile
 
 plugins() {
-	id('fabric-loom') version('1.16-SNAPSHOT')
+	id('fabric-loom') version('1.19-SNAPSHOT')
 }
 
 version = project.mod_version
@@ -113,6 +113,9 @@ dependencies() {
 
 loom() {
 	accessWidenerPath = file("src/${project.minecraft_version}/resources/vertigo.accesswidener")
+	runs.configureEach() {
+		preferGradleTask = false
+	}
 }
 
 processResources() {
