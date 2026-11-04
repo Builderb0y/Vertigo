@@ -33,7 +33,7 @@ public class ClientboundLevelChunkPacketData_FilterSections {
 
 	@WrapWithCondition(method = "<init>(Lnet/minecraft/world/level/chunk/LevelChunk;)V", at = @At(value = "INVOKE", target = "Ljava/util/List;add(Ljava/lang/Object;)Z"))
 	private boolean vertigo_filterBlockEntity(List<?> list, Object element, @Local(argsOnly = true) LevelChunk chunk) {
-		return vertigo_checkY(chunk.getPos(), ((BlockEntityInfo)(element)).y >> 4);
+		return vertigo_checkY(chunk.getPos(), ((BlockEntityInfo)(element)).y #if MC_VERSION >= MC_26_3_0 () #endif >> 4);
 	}
 
 	@Unique

@@ -8,6 +8,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.chat.ChatAbilities;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.player.ItemActivation;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.stats.StatsCounter;
 import net.minecraft.world.entity.player.Input;
@@ -27,14 +28,25 @@ public class LocalPlayer_CreateTrackingManager extends AbstractClientPlayer {
 
 	@Inject(method = "<init>", at = @At("RETURN"))
 	private void vertigo_createTrackingManager(
-		Minecraft minecraft,
-		ClientLevel level,
-		ClientPacketListener connection,
-		StatsCounter stats,
-		ClientRecipeBook recipeBook,
-		Input lastSentInput,
-		boolean wasSprinting,
-		ChatAbilities chatAbilities,
+		#if MC_VERSION >= MC_26_3_0
+			Minecraft minecraft,
+			ClientLevel level,
+			ClientPacketListener connection,
+			StatsCounter stats,
+			ClientRecipeBook recipeBook,
+			Input lastSentInput,
+			boolean wasSprinting,
+			ChatAbilities chatAbilities,
+			ItemActivation itemActivation,
+		#else
+			ClientLevel level,
+			ClientPacketListener connection,
+			StatsCounter stats,
+			ClientRecipeBook recipeBook,
+			Input lastSentInput,
+			boolean wasSprinting,
+			ChatAbilities chatAbilities,
+		#endif
 		CallbackInfo callback
 	) {
 		TrackingManager.set(this, TrackingManager.createClient());
